@@ -11,7 +11,7 @@
 
 ## 特性
 
-**架构与工程**
+### **架构与工程**
 
 - 全量最新技术栈：React 19 / Ant Design 6 / React Router 7 / Vite 8（Rolldown 引擎）/ TypeScript 7 / Biome 2
 - 路由级代码分割 + vendor 分包缓存策略，第三方库按需加载（antd ESM tree-shaking、Excel 导出动态导入）
@@ -19,7 +19,7 @@
 - Zustand 四大 Store（auth / app / tabs / notification）全部 persist 持久化
 - 内置可持久化的 Mock 数据层（localStorage），一行环境变量切换真实后端
 
-**功能**
+### **功能**
 
 - 登录鉴权：token 持久化、登录回跳、演示账号一键填充
 - 多标签页导航：固定标签、关闭当前 / 其他 / 全部，右键菜单，跨刷新保留
@@ -71,7 +71,7 @@ bun run preview    # 本地预览生产构建
 
 ## 项目结构
 
-```
+```bash
 src/
 ├── api/            # 接口层（与真实后端一一对应）
 ├── components/     # 通用组件（Authorized / PageHeader / FileIcon / LockScreen ...）
