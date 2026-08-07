@@ -91,7 +91,7 @@
 要求 [Bun](https://bun.sh) >= 1.1。
 
 ```bash
-git clone https://github.com/<你的用户名>/webpros-admin.git
+git clone https://github.com/codetown/webpros-admin.git
 cd webpros-admin
 
 bun install        # 安装依赖
