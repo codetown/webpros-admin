@@ -1,4 +1,14 @@
-import type { DocItem, Gender, LogItem, MenuItem, RoleItem, Status, SystemUser } from "@/types";
+import type {
+  DocItem,
+  Gender,
+  LogItem,
+  MenuItem,
+  RoleItem,
+  Status,
+  SystemUser,
+  TaskInstance,
+  Workflow,
+} from "@/types";
 
 /** Mock 数据库用户（含密码字段，仅 Mock 内部使用） */
 export type DbUser = SystemUser & { password: string };
@@ -9,9 +19,11 @@ export interface MockDB {
   menus: MenuItem[];
   logs: LogItem[];
   docs: DocItem[];
+  workflows: Workflow[];
+  tasks: TaskInstance[];
 }
 
-const DB_KEY = "webpros-admin-mock-db-v2";
+const DB_KEY = "webpros-admin-mock-db-v3";
 
 const depts = ["研发部", "市场部", "财务部", "人事部", "运营部"];
 const surnames = "赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张".split("");
@@ -144,6 +156,10 @@ function seedRoles(): RoleItem[] {
         "docs:list",
         "docs:upload",
         "docs:download",
+        "workflow:list",
+        "workflow:task:list",
+        "workflow:task:create",
+        "workflow:task:submit",
       ],
       status: 1,
       createdAt: daysAgo(300),
@@ -382,6 +398,83 @@ function seedMenus(): MenuItem[] {
       sort: 4,
       status: 1,
     },
+    {
+      id: 8,
+      parentId: 0,
+      name: "流程中心",
+      type: "catalog",
+      icon: "ApartmentOutlined",
+      path: "/workflow",
+      sort: 4,
+      status: 1,
+    },
+    {
+      id: 80,
+      parentId: 8,
+      name: "工作流定义",
+      type: "menu",
+      icon: "DeploymentUnitOutlined",
+      path: "/workflow/define",
+      permission: "workflow:list",
+      sort: 1,
+      status: 1,
+    },
+    {
+      id: 81,
+      parentId: 8,
+      name: "任务实例",
+      type: "menu",
+      icon: "AuditOutlined",
+      path: "/workflow/task",
+      permission: "workflow:task:list",
+      sort: 2,
+      status: 1,
+    },
+    {
+      id: 82,
+      parentId: 80,
+      name: "工作流配置",
+      type: "button",
+      permission: "workflow:update",
+      sort: 1,
+      status: 1,
+    },
+    {
+      id: 83,
+      parentId: 80,
+      name: "工作流删除",
+      type: "button",
+      permission: "workflow:delete",
+      sort: 2,
+      status: 1,
+    },
+    {
+      id: 84,
+      parentId: 81,
+      name: "创建任务",
+      type: "button",
+      permission: "workflow:task:create",
+      sort: 1,
+      status: 1,
+    },
+    {
+      id: 85,
+      parentId: 81,
+      name: "提交表单",
+      type: "button",
+      permission: "workflow:task:submit",
+      sort: 2,
+      status: 1,
+    },
+    {
+      id: 86,
+      parentId: 81,
+      name: "取消任务",
+      type: "button",
+      permission: "workflow:task:cancel",
+      sort: 3,
+      status: 1,
+    },
   ];
 }
 
@@ -457,13 +550,387 @@ function seedDocs(): DocItem[] {
   }));
 }
 
+function seedWorkflows(): Workflow[] {
+  return [
+    {
+      id: 1,
+      name: "员工入职流程",
+      code: "onboarding",
+      description: "新员工入职登记、HR 审核与行政安排",
+      status: 1,
+      createdAt: daysAgo(90),
+      updatedAt: daysAgo(5),
+      steps: [
+        {
+          id: "onb-s1",
+          name: "入职登记",
+          description: "填写个人与岗位信息",
+          fields: [
+            {
+              id: "onb-s1-f1",
+              name: "realName",
+              label: "姓名",
+              type: "input",
+              required: true,
+              placeholder: "请输入真实姓名",
+            },
+            {
+              id: "onb-s1-f2",
+              name: "dept",
+              label: "所属部门",
+              type: "select",
+              required: true,
+              options: ["研发部", "市场部", "财务部", "人事部"],
+            },
+            {
+              id: "onb-s1-f3",
+              name: "position",
+              label: "岗位",
+              type: "input",
+              required: true,
+              placeholder: "如：前端工程师",
+            },
+            { id: "onb-s1-f4", name: "entryDate", label: "入职日期", type: "date", required: true },
+            {
+              id: "onb-s1-f5",
+              name: "email",
+              label: "企业邮箱",
+              type: "input",
+              required: true,
+              placeholder: "name@company.com",
+            },
+          ],
+        },
+        {
+          id: "onb-s2",
+          name: "HR 审核",
+          description: "人事专员审核入职材料",
+          fields: [
+            {
+              id: "onb-s2-f1",
+              name: "result",
+              label: "审核结果",
+              type: "radio",
+              required: true,
+              options: ["通过", "驳回"],
+            },
+            {
+              id: "onb-s2-f2",
+              name: "comment",
+              label: "审批意见",
+              type: "textarea",
+              required: false,
+              placeholder: "填写审核意见",
+            },
+          ],
+        },
+        {
+          id: "onb-s3",
+          name: "行政安排",
+          description: "工位与办公设备分配",
+          fields: [
+            {
+              id: "onb-s3-f1",
+              name: "workstation",
+              label: "工位",
+              type: "select",
+              required: true,
+              options: ["A 区", "B 区", "C 区"],
+            },
+            {
+              id: "onb-s3-f2",
+              name: "device",
+              label: "办公设备",
+              type: "select",
+              required: false,
+              options: ["笔记本", "显示器", "键鼠套装"],
+            },
+            {
+              id: "onb-s3-f3",
+              name: "accessCard",
+              label: "发放门禁卡",
+              type: "switch",
+              required: false,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: 2,
+      name: "报销审批流程",
+      code: "reimbursement",
+      description: "费用报销申请与逐级审批",
+      status: 1,
+      createdAt: daysAgo(80),
+      updatedAt: daysAgo(12),
+      steps: [
+        {
+          id: "rmb-s1",
+          name: "报销申请",
+          description: "填写报销明细",
+          fields: [
+            { id: "rmb-s1-f1", name: "amount", label: "报销金额", type: "number", required: true },
+            {
+              id: "rmb-s1-f2",
+              name: "type",
+              label: "费用类型",
+              type: "select",
+              required: true,
+              options: ["差旅费", "办公费", "招待费", "交通费"],
+            },
+            {
+              id: "rmb-s1-f3",
+              name: "reason",
+              label: "报销事由",
+              type: "textarea",
+              required: true,
+              placeholder: "说明费用产生的背景",
+            },
+            {
+              id: "rmb-s1-f4",
+              name: "invoiceNo",
+              label: "发票编号",
+              type: "input",
+              required: false,
+              placeholder: "如有请填写",
+            },
+          ],
+        },
+        {
+          id: "rmb-s2",
+          name: "主管审批",
+          description: "直属主管审批",
+          fields: [
+            {
+              id: "rmb-s2-f1",
+              name: "agree",
+              label: "是否同意",
+              type: "radio",
+              required: true,
+              options: ["同意", "驳回"],
+            },
+            {
+              id: "rmb-s2-f2",
+              name: "comment",
+              label: "审批意见",
+              type: "textarea",
+              required: false,
+              placeholder: "填写审批意见",
+            },
+          ],
+        },
+        {
+          id: "rmb-s3",
+          name: "财务打款",
+          description: "财务核对并打款",
+          fields: [
+            {
+              id: "rmb-s3-f1",
+              name: "account",
+              label: "收款账号",
+              type: "input",
+              required: true,
+              placeholder: "银行卡号",
+            },
+            {
+              id: "rmb-s3-f2",
+              name: "paidAmount",
+              label: "实付金额",
+              type: "number",
+              required: true,
+            },
+            { id: "rmb-s3-f3", name: "remark", label: "备注", type: "textarea", required: false },
+          ],
+        },
+      ],
+    },
+    {
+      id: 3,
+      name: "项目立项流程",
+      code: "project-kickoff",
+      description: "新项目立项申请与评审",
+      status: 1,
+      createdAt: daysAgo(60),
+      updatedAt: daysAgo(20),
+      steps: [
+        {
+          id: "prj-s1",
+          name: "立项申请",
+          description: "填写项目基本信息",
+          fields: [
+            {
+              id: "prj-s1-f1",
+              name: "projectName",
+              label: "项目名称",
+              type: "input",
+              required: true,
+            },
+            {
+              id: "prj-s1-f2",
+              name: "budget",
+              label: "预算（万元）",
+              type: "number",
+              required: true,
+            },
+            {
+              id: "prj-s1-f3",
+              name: "startDate",
+              label: "计划启动日期",
+              type: "date",
+              required: true,
+            },
+            {
+              id: "prj-s1-f4",
+              name: "priority",
+              label: "优先级",
+              type: "radio",
+              required: true,
+              options: ["高", "中", "低"],
+            },
+          ],
+        },
+        {
+          id: "prj-s2",
+          name: "立项评审",
+          description: "评审委员会评审",
+          fields: [
+            {
+              id: "prj-s2-f1",
+              name: "passed",
+              label: "是否通过",
+              type: "radio",
+              required: true,
+              options: ["通过", "不通过"],
+            },
+            {
+              id: "prj-s2-f2",
+              name: "comment",
+              label: "评审意见",
+              type: "textarea",
+              required: false,
+            },
+          ],
+        },
+      ],
+    },
+  ];
+}
+
+function seedTasks(workflows: Workflow[]): TaskInstance[] {
+  const [onboarding, reimbursement, kickoff] = workflows;
+  return [
+    {
+      id: 1,
+      workflowId: 1,
+      workflowName: "员工入职流程",
+      title: "张三入职办理",
+      creator: "运营小王",
+      assignee: "超级管理员",
+      steps: onboarding.steps,
+      currentStep: 1,
+      status: "processing",
+      formData: {
+        "onb-s1": {
+          realName: "张三",
+          dept: "研发部",
+          position: "前端工程师",
+          entryDate: "2026-08-18",
+          email: "zhangsan@company.com",
+        },
+      },
+      createdAt: daysAgo(1),
+      updatedAt: daysAgo(0),
+    },
+    {
+      id: 2,
+      workflowId: 1,
+      workflowName: "员工入职流程",
+      title: "李四入职办理",
+      creator: "运营小王",
+      assignee: "超级管理员",
+      steps: onboarding.steps,
+      currentStep: 3,
+      status: "completed",
+      formData: {
+        "onb-s1": {
+          realName: "李四",
+          dept: "市场部",
+          position: "市场专员",
+          entryDate: "2026-08-10",
+          email: "lisi@company.com",
+        },
+        "onb-s2": { result: "通过", comment: "材料齐全，同意入职" },
+        "onb-s3": { workstation: "B 区", device: "笔记本", accessCard: true },
+      },
+      createdAt: daysAgo(9),
+      updatedAt: daysAgo(7),
+    },
+    {
+      id: 3,
+      workflowId: 2,
+      workflowName: "报销审批流程",
+      title: "王五 7 月差旅报销",
+      creator: "运营小王",
+      assignee: "超级管理员",
+      steps: reimbursement.steps,
+      currentStep: 2,
+      status: "processing",
+      formData: {
+        "rmb-s1": {
+          amount: 2680,
+          type: "差旅费",
+          reason: "赴上海客户现场出差",
+          invoiceNo: "INV-20260728-001",
+        },
+        "rmb-s2": { agree: "同意", comment: "费用合理" },
+      },
+      createdAt: daysAgo(2),
+      updatedAt: daysAgo(1),
+    },
+    {
+      id: 4,
+      workflowId: 3,
+      workflowName: "项目立项流程",
+      title: "智能客服系统立项",
+      creator: "超级管理员",
+      assignee: "运营小王",
+      steps: kickoff.steps,
+      currentStep: 0,
+      status: "processing",
+      formData: {},
+      createdAt: daysAgo(0),
+      updatedAt: daysAgo(0),
+    },
+    {
+      id: 5,
+      workflowId: 2,
+      workflowName: "报销审批流程",
+      title: "赵六办公用品报销",
+      creator: "运营小王",
+      assignee: "超级管理员",
+      steps: reimbursement.steps,
+      currentStep: 1,
+      status: "cancelled",
+      formData: {
+        "rmb-s1": { amount: 360, type: "办公费", reason: "购买键盘鼠标", invoiceNo: "" },
+      },
+      createdAt: daysAgo(4),
+      updatedAt: daysAgo(3),
+    },
+  ];
+}
+
 function seed(): MockDB {
+  const workflows = seedWorkflows();
   return {
     users: seedUsers(),
     roles: seedRoles(),
     menus: seedMenus(),
     logs: seedLogs(),
     docs: seedDocs(),
+    workflows,
+    tasks: seedTasks(workflows),
   };
 }
 

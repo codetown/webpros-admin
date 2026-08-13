@@ -190,3 +190,69 @@ export interface DashboardSummary {
   activities: ActivityItem[];
   deptStats: DeptStat[];
 }
+
+/** 表单字段类型 */
+export type WorkflowFieldType =
+  | "input"
+  | "textarea"
+  | "number"
+  | "select"
+  | "radio"
+  | "date"
+  | "switch";
+
+/** 工作流表单项定义 */
+export interface WorkflowField {
+  id: string;
+  /** 字段标识（英文，用于表单 name） */
+  name: string;
+  /** 字段名称（展示 label） */
+  label: string;
+  type: WorkflowFieldType;
+  required: boolean;
+  placeholder?: string;
+  tips?: string;
+  /** select / radio 的选项 */
+  options?: string[];
+}
+
+/** 工作流步骤 */
+export interface WorkflowStep {
+  id: string;
+  name: string;
+  description?: string;
+  fields: WorkflowField[];
+}
+
+/** 工作流定义 */
+export interface Workflow {
+  id: number;
+  name: string;
+  code: string;
+  description?: string;
+  steps: WorkflowStep[];
+  status: Status;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** 任务状态 */
+export type TaskStatus = "pending" | "processing" | "completed" | "cancelled";
+
+/** 任务实例（步骤为创建时的快照） */
+export interface TaskInstance {
+  id: number;
+  workflowId: number;
+  workflowName: string;
+  title: string;
+  creator: string;
+  assignee?: string;
+  steps: WorkflowStep[];
+  /** 当前步骤索引 */
+  currentStep: number;
+  status: TaskStatus;
+  /** 各步骤表单数据：stepId -> 字段值 */
+  formData: Record<string, Record<string, unknown>>;
+  createdAt: string;
+  updatedAt: string;
+}

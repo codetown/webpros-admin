@@ -1,6 +1,7 @@
 import type { MenuFormValues } from "@/api/menu";
 import type { RoleFormValues } from "@/api/role";
 import type { UserFormValues } from "@/api/user";
+import type { WorkflowFormValues } from "@/api/workflow";
 import type {
   ApiResult,
   DashboardSummary,
@@ -10,7 +11,9 @@ import type {
   MenuItem,
   RoleItem,
   Status,
+  TaskInstance,
   UserInfo,
+  Workflow,
 } from "@/types";
 import { collectPermissions, type DbUser, loadDB, saveDB, toPublicUser } from "./db";
 
@@ -450,6 +453,155 @@ export const handlers: MockRoute[] = [
       db.docs = db.docs.filter((item) => item.id !== Number(params.id));
       saveDB(db);
       return ok(null, "删除成功");
+    },
+  },
+
+  // ---------------- 工作流定义 ----------------
+  {
+    method: "GET",
+    pattern: /^\/workflow\/list$/,
+    handler: () => {
+      const db = loadDB();
+      return ok(db.workflows);
+    },
+  },
+  {
+    method: "POST",
+    pattern: /^\/workflow$/,
+    handler: ({ body }) => {
+      const db = loadDB();
+      const values = body as unknown as WorkflowFormValues;
+      if (db.workflows.some((workflow) => workflow.code === values.code)) {
+        return fail("流程编码已存在");
+      }
+      const now = new Date().toISOString();
+      const workflow: Workflow = {
+        ...values,
+        id: Math.max(0, ...db.workflows.map((item) => item.id)) + 1,
+        createdAt: now,
+        updatedAt: now,
+      };
+      db.workflows.push(workflow);
+      saveDB(db);
+      return ok(workflow, "创建成功");
+    },
+  },
+  {
+    method: "PUT",
+    pattern: /^\/workflow\/(?<id>\d+)$/,
+    handler: ({ params, body }) => {
+      const db = loadDB();
+      const workflow = db.workflows.find((item) => item.id === Number(params.id));
+      if (!workflow) return fail("流程不存在");
+      const values = body as unknown as WorkflowFormValues;
+      if (values.code !== workflow.code && db.workflows.some((item) => item.code === values.code)) {
+        return fail("流程编码已存在");
+      }
+      Object.assign(workflow, values);
+      workflow.updatedAt = new Date().toISOString();
+      saveDB(db);
+      return ok(workflow, "更新成功");
+    },
+  },
+  {
+    method: "DELETE",
+    pattern: /^\/workflow\/(?<id>\d+)$/,
+    handler: ({ params }) => {
+      const db = loadDB();
+      const id = Number(params.id);
+      if (db.tasks.some((task) => task.workflowId === id)) {
+        return fail("已有任务引用该流程，无法删除");
+      }
+      db.workflows = db.workflows.filter((item) => item.id !== id);
+      saveDB(db);
+      return ok(null, "删除成功");
+    },
+  },
+
+  // ---------------- 任务实例 ----------------
+  {
+    method: "GET",
+    pattern: /^\/task\/page$/,
+    handler: ({ query }) => {
+      const db = loadDB();
+      const page = numberQuery(query, "page", 1);
+      const pageSize = numberQuery(query, "pageSize", 10);
+      const title = query.get("title")?.trim();
+      const status = query.get("status");
+      let list = [...db.tasks];
+      if (title) list = list.filter((task) => task.title.includes(title));
+      if (status) list = list.filter((task) => task.status === status);
+      list = list.sort((a, b) => b.id - a.id);
+      return ok({ list: paginate(list, page, pageSize), total: list.length });
+    },
+  },
+  {
+    method: "POST",
+    pattern: /^\/task$/,
+    handler: ({ body }) => {
+      const db = loadDB();
+      const workflowId = Number(body.workflowId);
+      const workflow = db.workflows.find((item) => item.id === workflowId);
+      if (!workflow) return fail("流程不存在");
+      const now = new Date().toISOString();
+      const task: TaskInstance = {
+        id: Math.max(0, ...db.tasks.map((item) => item.id)) + 1,
+        workflowId,
+        workflowName: workflow.name,
+        title: String(body.title ?? "未命名任务"),
+        creator: String(body.creator ?? "-"),
+        assignee: typeof body.assignee === "string" && body.assignee ? body.assignee : undefined,
+        steps: workflow.steps.map((step) => ({
+          ...step,
+          fields: step.fields.map((field) => ({ ...field })),
+        })),
+        currentStep: 0,
+        status: "processing",
+        formData: {},
+        createdAt: now,
+        updatedAt: now,
+      };
+      db.tasks.push(task);
+      saveDB(db);
+      return ok(task, "创建成功");
+    },
+  },
+  {
+    method: "POST",
+    pattern: /^\/task\/(?<id>\d+)\/submit$/,
+    handler: ({ params, body }) => {
+      const db = loadDB();
+      const task = db.tasks.find((item) => item.id === Number(params.id));
+      if (!task) return fail("任务不存在");
+      if (task.status !== "processing") return fail("当前任务状态不可提交");
+      const step = task.steps[task.currentStep];
+      if (!step) return fail("流程配置异常");
+      task.formData = {
+        ...task.formData,
+        [step.id]: (body.data ?? {}) as Record<string, unknown>,
+      };
+      if (task.currentStep + 1 >= task.steps.length) {
+        task.status = "completed";
+      } else {
+        task.currentStep += 1;
+      }
+      task.updatedAt = new Date().toISOString();
+      saveDB(db);
+      return ok(task, task.status === "completed" ? "任务已完成" : "已流转到下一步");
+    },
+  },
+  {
+    method: "POST",
+    pattern: /^\/task\/(?<id>\d+)\/cancel$/,
+    handler: ({ params }) => {
+      const db = loadDB();
+      const task = db.tasks.find((item) => item.id === Number(params.id));
+      if (!task) return fail("任务不存在");
+      if (task.status === "completed") return fail("已完成的任务不能取消");
+      task.status = "cancelled";
+      task.updatedAt = new Date().toISOString();
+      saveDB(db);
+      return ok(task, "任务已取消");
     },
   },
 

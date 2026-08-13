@@ -1,5 +1,8 @@
 import {
+  ApartmentOutlined,
+  AuditOutlined,
   DashboardOutlined,
+  DeploymentUnitOutlined,
   FileTextOutlined,
   FolderOutlined,
   PartitionOutlined,
@@ -13,6 +16,8 @@ import { PermissionGuard } from "./guards";
 // 路由级懒加载：每个页面独立 chunk，按需加载
 const Dashboard = lazy(() => import("@/pages/dashboard"));
 const DocManage = lazy(() => import("@/pages/docs"));
+const WorkflowDefine = lazy(() => import("@/pages/workflow/define"));
+const WorkflowTask = lazy(() => import("@/pages/workflow/task"));
 const UserManage = lazy(() => import("@/pages/system/user"));
 const RoleManage = lazy(() => import("@/pages/system/role"));
 const MenuManage = lazy(() => import("@/pages/system/menu"));
@@ -54,6 +59,30 @@ export const layoutRoutes: AppRouteObject[] = [
       </PermissionGuard>
     ),
     meta: { title: "文档管理", icon: <FolderOutlined />, perm: "docs:list" },
+  },
+  {
+    path: "workflow",
+    meta: { title: "流程中心", icon: <ApartmentOutlined />, perm: "workflow:list" },
+    children: [
+      {
+        path: "define",
+        element: (
+          <PermissionGuard perm="workflow:list">
+            <WorkflowDefine />
+          </PermissionGuard>
+        ),
+        meta: { title: "工作流定义", icon: <DeploymentUnitOutlined />, perm: "workflow:list" },
+      },
+      {
+        path: "task",
+        element: (
+          <PermissionGuard perm="workflow:task:list">
+            <WorkflowTask />
+          </PermissionGuard>
+        ),
+        meta: { title: "任务实例", icon: <AuditOutlined />, perm: "workflow:task:list" },
+      },
+    ],
   },
   {
     path: "system",
