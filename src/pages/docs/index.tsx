@@ -29,9 +29,13 @@ export default function DocManagePage() {
   const { modal } = App.useApp();
 
   const handleDownload = async (record: DocItem) => {
-    const content = await getDocContent(record.id);
-    downloadDataUrl(content, `${record.name}.${record.ext}`);
-    refresh();
+    try {
+      const content = await getDocContent(record.id);
+      downloadDataUrl(content, `${record.name}.${record.ext}`);
+      refresh();
+    } catch {
+      // 错误提示已由请求层处理
+    }
   };
 
   const openRename = (record: DocItem) => {

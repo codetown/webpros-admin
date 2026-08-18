@@ -156,7 +156,7 @@ export default function TaskDetailDrawer({ task, onClose, onSuccess }: TaskDetai
                   {currentStep.description}
                 </div>
               ) : null}
-              <Form form={form} layout="vertical" key={current.currentStep}>
+              <Form form={form} layout="vertical" key={`${current.id}-${current.currentStep}`}>
                 {renderFieldItems(currentStep.fields)}
                 <Authorized perm="workflow:task:submit">
                   <Button type="primary" loading={submitting} onClick={handleSubmit}>

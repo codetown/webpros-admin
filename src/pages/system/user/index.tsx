@@ -72,8 +72,12 @@ export default function UserManagePage() {
   };
 
   const handleStatusChange = async (record: SystemUser, checked: boolean) => {
-    await updateUserStatus(record.id, (checked ? 1 : 0) as Status);
-    refresh();
+    try {
+      await updateUserStatus(record.id, (checked ? 1 : 0) as Status);
+      refresh();
+    } catch {
+      // 错误提示已由请求层处理，切换状态在请求失败时不会刷新列表
+    }
   };
 
   const handleExport = async () => {
