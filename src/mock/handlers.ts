@@ -605,6 +605,29 @@ export const handlers: MockRoute[] = [
     },
   },
 
+  // ---------------- 平台配置 ----------------
+  {
+    method: "GET",
+    pattern: /^\/config$/,
+    handler: () => {
+      const db = loadDB();
+      return ok(db.configs);
+    },
+  },
+  {
+    method: "PUT",
+    pattern: /^\/config$/,
+    handler: ({ body }) => {
+      const db = loadDB();
+      const values = body as Record<string, unknown>;
+      for (const item of db.configs) {
+        if (item.key in values) item.value = values[item.key] as string | number | boolean;
+      }
+      saveDB(db);
+      return ok(db.configs, "保存成功");
+    },
+  },
+
   // ---------------- 控制台 ----------------
   {
     method: "GET",

@@ -236,6 +236,20 @@ export interface Workflow {
   updatedAt: string;
 }
 
+/** 平台配置项类型 */
+export type ConfigValueType = "string" | "number" | "boolean" | "select";
+
+/** 平台配置项 */
+export interface PlatformConfig {
+  key: string;
+  group: string;
+  label: string;
+  type: ConfigValueType;
+  value: string | number | boolean;
+  options?: { label: string; value: string | number }[];
+  description?: string;
+}
+
 /** 任务状态 */
 export type TaskStatus = "pending" | "processing" | "completed" | "cancelled";
 

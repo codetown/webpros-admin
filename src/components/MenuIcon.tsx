@@ -1,6 +1,7 @@
 import {
   ApartmentOutlined,
   AuditOutlined,
+  ControlOutlined,
   DashboardOutlined,
   DeploymentUnitOutlined,
   FileTextOutlined,
@@ -23,6 +24,7 @@ const iconMap: Record<string, ReactNode> = {
   ApartmentOutlined: <ApartmentOutlined />,
   DeploymentUnitOutlined: <DeploymentUnitOutlined />,
   AuditOutlined: <AuditOutlined />,
+  ControlOutlined: <ControlOutlined />,
 };
 
 /** 根据图标名称渲染图标（菜单管理中的图标字段） */

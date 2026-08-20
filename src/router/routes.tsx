@@ -1,6 +1,7 @@
 import {
   ApartmentOutlined,
   AuditOutlined,
+  ControlOutlined,
   DashboardOutlined,
   DeploymentUnitOutlined,
   FileTextOutlined,
@@ -18,6 +19,7 @@ const Dashboard = lazy(() => import("@/pages/dashboard"));
 const DocManage = lazy(() => import("@/pages/docs"));
 const WorkflowDefine = lazy(() => import("@/pages/workflow/define"));
 const WorkflowTask = lazy(() => import("@/pages/workflow/task"));
+const PlatformConfig = lazy(() => import("@/pages/system/config"));
 const UserManage = lazy(() => import("@/pages/system/user"));
 const RoleManage = lazy(() => import("@/pages/system/role"));
 const MenuManage = lazy(() => import("@/pages/system/menu"));
@@ -123,6 +125,15 @@ export const layoutRoutes: AppRouteObject[] = [
           </PermissionGuard>
         ),
         meta: { title: "操作日志", icon: <FileTextOutlined />, perm: "system:log:list" },
+      },
+      {
+        path: "config",
+        element: (
+          <PermissionGuard perm="platform:config:list">
+            <PlatformConfig />
+          </PermissionGuard>
+        ),
+        meta: { title: "平台配置", icon: <ControlOutlined />, perm: "platform:config:list" },
       },
     ],
   },

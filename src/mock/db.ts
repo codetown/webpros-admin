@@ -3,6 +3,7 @@ import type {
   Gender,
   LogItem,
   MenuItem,
+  PlatformConfig,
   RoleItem,
   Status,
   SystemUser,
@@ -21,9 +22,10 @@ export interface MockDB {
   docs: DocItem[];
   workflows: Workflow[];
   tasks: TaskInstance[];
+  configs: PlatformConfig[];
 }
 
-const DB_KEY = "webpros-admin-mock-db-v3";
+const DB_KEY = "webpros-admin-mock-db-v4";
 
 const depts = ["研发部", "市场部", "财务部", "人事部", "运营部"];
 const surnames = "赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张".split("");
@@ -475,6 +477,26 @@ function seedMenus(): MenuItem[] {
       sort: 3,
       status: 1,
     },
+    {
+      id: 9,
+      parentId: 2,
+      name: "平台配置",
+      type: "menu",
+      icon: "ControlOutlined",
+      path: "/system/config",
+      permission: "platform:config:list",
+      sort: 5,
+      status: 1,
+    },
+    {
+      id: 90,
+      parentId: 9,
+      name: "配置修改",
+      type: "button",
+      permission: "platform:config:update",
+      sort: 1,
+      status: 1,
+    },
   ];
 }
 
@@ -921,6 +943,75 @@ function seedTasks(workflows: Workflow[]): TaskInstance[] {
   ];
 }
 
+function seedConfigs(): PlatformConfig[] {
+  return [
+    {
+      key: "site.name",
+      group: "basic",
+      label: "系统名称",
+      type: "string",
+      value: "WebPros Admin",
+      description: "显示在登录页、侧边栏与浏览器标题",
+    },
+    {
+      key: "site.footer",
+      group: "basic",
+      label: "页脚版权",
+      type: "string",
+      value: "WebPros Admin ©2026 · Powered by React + Ant Design",
+      description: "显示在页面底部",
+    },
+    {
+      key: "security.watermark",
+      group: "security",
+      label: "开启页面水印",
+      type: "boolean",
+      value: false,
+      description: "在内容区域显示水印，用于安全审计",
+    },
+    {
+      key: "security.watermarkText",
+      group: "security",
+      label: "水印文字",
+      type: "string",
+      value: "WebPros Admin",
+      description: "留空时默认显示当前用户名",
+    },
+    {
+      key: "security.loginLimit",
+      group: "security",
+      label: "登录失败次数限制",
+      type: "number",
+      value: 5,
+      description: "连续失败达到次数后临时锁定账号",
+    },
+    {
+      key: "feature.multiTab",
+      group: "feature",
+      label: "多标签页导航",
+      type: "boolean",
+      value: true,
+      description: "关闭后不再显示标签页栏",
+    },
+    {
+      key: "feature.menuSearch",
+      group: "feature",
+      label: "菜单快捷搜索",
+      type: "boolean",
+      value: true,
+      description: "顶栏搜索按钮与 Ctrl+K 快捷方式",
+    },
+    {
+      key: "feature.notification",
+      group: "feature",
+      label: "消息中心",
+      type: "boolean",
+      value: true,
+      description: "顶栏铃铛与未读角标",
+    },
+  ];
+}
+
 function seed(): MockDB {
   const workflows = seedWorkflows();
   return {
@@ -931,6 +1022,7 @@ function seed(): MockDB {
     docs: seedDocs(),
     workflows,
     tasks: seedTasks(workflows),
+    configs: seedConfigs(),
   };
 }
 

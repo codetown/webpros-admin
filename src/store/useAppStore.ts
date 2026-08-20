@@ -22,13 +22,11 @@ function applyTheme(themeMode: ThemeMode) {
 interface AppState {
   themeMode: ThemeMode;
   collapsed: boolean;
-  watermark: boolean;
   primaryColor: string;
   locked: boolean;
   setThemeMode: (themeMode: ThemeMode) => void;
   toggleCollapsed: () => void;
   setCollapsed: (collapsed: boolean) => void;
-  setWatermark: (watermark: boolean) => void;
   setPrimaryColor: (primaryColor: string) => void;
   lock: () => void;
   unlock: () => void;
@@ -39,7 +37,6 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       themeMode: getInitialTheme(),
       collapsed: false,
-      watermark: false,
       primaryColor: "#165dff",
       locked: false,
       setThemeMode: (themeMode) => {
@@ -48,7 +45,6 @@ export const useAppStore = create<AppState>()(
       },
       toggleCollapsed: () => set((state) => ({ collapsed: !state.collapsed })),
       setCollapsed: (collapsed) => set({ collapsed }),
-      setWatermark: (watermark) => set({ watermark }),
       setPrimaryColor: (primaryColor) => set({ primaryColor }),
       lock: () => set({ locked: true }),
       unlock: () => set({ locked: false }),
@@ -58,7 +54,6 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         themeMode: state.themeMode,
         collapsed: state.collapsed,
-        watermark: state.watermark,
         primaryColor: state.primaryColor,
         locked: state.locked,
       }),

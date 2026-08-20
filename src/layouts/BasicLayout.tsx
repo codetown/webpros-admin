@@ -4,6 +4,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import Loading from "@/components/Loading";
 import { useAppStore } from "@/store/useAppStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import { getConfigValue, usePlatformConfigStore } from "@/store/usePlatformConfigStore";
 import HeaderBar from "./components/HeaderBar";
 import SiderMenu from "./components/SiderMenu";
 import TabsNav from "./components/TabsNav";
@@ -11,10 +12,20 @@ import TabsNav from "./components/TabsNav";
 export default function BasicLayout() {
   const collapsed = useAppStore((state) => state.collapsed);
   const setCollapsed = useAppStore((state) => state.setCollapsed);
-  const watermark = useAppStore((state) => state.watermark);
   const themeMode = useAppStore((state) => state.themeMode);
   const user = useAuthStore((state) => state.user);
+  const configs = usePlatformConfigStore((state) => state.configs);
   const navigate = useNavigate();
+
+  const siteName = String(getConfigValue(configs, "site.name") || "WebPros Admin");
+  const footerText = String(
+    getConfigValue(configs, "site.footer") || "WebPros Admin ©2026 · Powered by React + Ant Design",
+  );
+  const watermarkEnabled = getConfigValue(configs, "security.watermark") === true;
+  const watermarkText = String(
+    getConfigValue(configs, "security.watermarkText") || user?.nickname || "WebPros Admin",
+  );
+  const multiTab = getConfigValue(configs, "feature.multiTab") !== false;
 
   const content = (
     <Suspense fallback={<Loading />}>
@@ -36,22 +47,18 @@ export default function BasicLayout() {
       >
         <button type="button" className="sider-logo" onClick={() => navigate("/dashboard")}>
           <img src="/favicon.svg" alt="logo" />
-          {!collapsed && <span>WebPros Admin</span>}
+          {!collapsed && <span>{siteName}</span>}
         </button>
         <SiderMenu />
       </Layout.Sider>
       <Layout>
         <HeaderBar />
-        <TabsNav />
+        {multiTab ? <TabsNav /> : null}
         <Layout.Content className="app-content">
-          {watermark ? (
-            <Watermark content={user?.nickname ?? "WebPros Admin"}>{content}</Watermark>
-          ) : (
-            content
-          )}
+          {watermarkEnabled ? <Watermark content={watermarkText}>{content}</Watermark> : content}
         </Layout.Content>
         <Layout.Footer style={{ textAlign: "center", padding: "12px 50px" }}>
-          WebPros Admin ©2026 · Powered by React + Ant Design
+          {footerText}
         </Layout.Footer>
       </Layout>
       <FloatButton.BackTop />

@@ -1,7 +1,6 @@
 import {
   FullscreenExitOutlined,
   FullscreenOutlined,
-  HighlightOutlined,
   LockOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
@@ -17,6 +16,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { routeMetaMap } from "@/router/routes";
 import { useAppStore } from "@/store/useAppStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import { getConfigValue, usePlatformConfigStore } from "@/store/usePlatformConfigStore";
 import MenuSearch from "./MenuSearch";
 import NotificationBell from "./NotificationBell";
 
@@ -25,15 +25,17 @@ export default function HeaderBar() {
   const toggleCollapsed = useAppStore((state) => state.toggleCollapsed);
   const themeMode = useAppStore((state) => state.themeMode);
   const setThemeMode = useAppStore((state) => state.setThemeMode);
-  const watermark = useAppStore((state) => state.watermark);
-  const setWatermark = useAppStore((state) => state.setWatermark);
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const configs = usePlatformConfigStore((state) => state.configs);
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { modal } = App.useApp();
   const screens = Grid.useBreakpoint();
   const [fullscreen, setFullscreen] = useState(false);
+
+  const menuSearchEnabled = getConfigValue(configs, "feature.menuSearch") !== false;
+  const notificationEnabled = getConfigValue(configs, "feature.notification") !== false;
 
   useEffect(() => {
     const handler = () => setFullscreen(Boolean(document.fullscreenElement));
@@ -102,16 +104,8 @@ export default function HeaderBar() {
         {screens.md && breadcrumbItems.length > 1 ? <Breadcrumb items={breadcrumbItems} /> : null}
       </Space>
       <Space size={4}>
-        <MenuSearch />
-        <NotificationBell />
-        <Tooltip title="页面水印">
-          <Button
-            type={watermark ? "link" : "text"}
-            aria-label="切换页面水印"
-            icon={<HighlightOutlined />}
-            onClick={() => setWatermark(!watermark)}
-          />
-        </Tooltip>
+        {menuSearchEnabled ? <MenuSearch /> : null}
+        {notificationEnabled ? <NotificationBell /> : null}
         <Tooltip title={themeMode === "dark" ? "切换亮色模式" : "切换暗黑模式"}>
           <Button
             type="text"

@@ -209,8 +209,6 @@ const presetColors = ["#165dff", "#7c3aed", "#0ea5e9", "#10b981", "#f59e0b", "#e
 function PreferenceTab() {
   const themeMode = useAppStore((state) => state.themeMode);
   const setThemeMode = useAppStore((state) => state.setThemeMode);
-  const watermark = useAppStore((state) => state.watermark);
-  const setWatermark = useAppStore((state) => state.setWatermark);
   const primaryColor = useAppStore((state) => state.primaryColor);
   const setPrimaryColor = useAppStore((state) => state.setPrimaryColor);
 
@@ -265,15 +263,6 @@ function PreferenceTab() {
           checked={themeMode === "dark"}
           onChange={(checked) => setThemeMode(checked ? "dark" : "light")}
         />
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0" }}>
-        <div>
-          <div style={{ fontWeight: 500 }}>页面水印</div>
-          <div className="stat-desc" style={{ fontSize: 13 }}>
-            在内容区域显示当前用户水印，用于安全审计
-          </div>
-        </div>
-        <Switch checked={watermark} onChange={setWatermark} />
       </div>
     </div>
   );

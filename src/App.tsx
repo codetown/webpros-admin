@@ -5,6 +5,7 @@ import { useEffect, useMemo } from "react";
 import LockScreen from "@/components/LockScreen";
 import AppRouter from "@/router";
 import { useAppStore } from "@/store/useAppStore";
+import { getConfigValue, usePlatformConfigStore } from "@/store/usePlatformConfigStore";
 import { bindMessage } from "@/utils/notify";
 
 /** 将 antd message 实例注入请求层 */
@@ -20,11 +21,24 @@ export default function RootApp() {
   const themeMode = useAppStore((state) => state.themeMode);
   const primaryColor = useAppStore((state) => state.primaryColor);
   const locked = useAppStore((state) => state.locked);
+  const configs = usePlatformConfigStore((state) => state.configs);
+  const loadConfigs = usePlatformConfigStore((state) => state.load);
+
+  // 应用启动时加载平台配置
+  useEffect(() => {
+    loadConfigs();
+  }, [loadConfigs]);
 
   // 同步品牌色到 CSS 变量，供全局样式（横幅、标签页等）使用
   useEffect(() => {
     document.documentElement.style.setProperty("--app-primary", primaryColor);
   }, [primaryColor]);
+
+  // 同步系统名称到浏览器标题
+  useEffect(() => {
+    const siteName = getConfigValue(configs, "site.name");
+    if (typeof siteName === "string" && siteName) document.title = siteName;
+  }, [configs]);
 
   const themeConfig = useMemo<ThemeConfig>(
     () => ({
