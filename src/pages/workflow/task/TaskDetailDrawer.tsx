@@ -3,7 +3,8 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { cancelTask, submitTaskStep } from "@/api/workflow";
 import Authorized from "@/components/Authorized";
-import type { TaskInstance, TaskStatus } from "@/types";
+import { taskStatusMeta } from "@/constants/meta";
+import type { TaskInstance } from "@/types";
 import { notify } from "@/utils/notify";
 import { formatFieldValue, renderFieldItems } from "../components/fields";
 
@@ -12,13 +13,6 @@ interface TaskDetailDrawerProps {
   onClose: () => void;
   onSuccess: () => void;
 }
-
-const statusMeta: Record<TaskStatus, { label: string; color: string }> = {
-  pending: { label: "待开始", color: "default" },
-  processing: { label: "进行中", color: "processing" },
-  completed: { label: "已完成", color: "success" },
-  cancelled: { label: "已取消", color: "error" },
-};
 
 /** 任务详情抽屉：Steps 进度 + 历史步骤只读数据 + 当前步骤动态表单 */
 export default function TaskDetailDrawer({ task, onClose, onSuccess }: TaskDetailDrawerProps) {
@@ -103,7 +97,9 @@ export default function TaskDetailDrawer({ task, onClose, onSuccess }: TaskDetai
         <div>
           <Space style={{ marginBottom: 8 }}>
             <Tag color="blue">{current.workflowName}</Tag>
-            <Tag color={statusMeta[current.status].color}>{statusMeta[current.status].label}</Tag>
+            <Tag color={taskStatusMeta[current.status].color}>
+              {taskStatusMeta[current.status].label}
+            </Tag>
             <span className="stat-desc" style={{ fontSize: 12 }}>
               发起人 {current.creator}
               {current.assignee ? ` · 负责人 ${current.assignee}` : ""}

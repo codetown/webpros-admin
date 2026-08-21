@@ -2,6 +2,7 @@ import { InboxOutlined } from "@ant-design/icons";
 import { Modal, Select, Upload, type UploadFile, type UploadProps } from "antd";
 import { useState } from "react";
 import { createDoc } from "@/api/doc";
+import { docCategories } from "@/constants/meta";
 import { useAuthStore } from "@/store/useAuthStore";
 import { readAsDataUrl, splitFileName } from "@/utils/file";
 import { notify } from "@/utils/notify";
@@ -9,8 +10,6 @@ import { notify } from "@/utils/notify";
 /** Mock 模式下保存原内容的文件大小上限 */
 const CONTENT_LIMIT = 1.5 * 1024 * 1024;
 const SIZE_LIMIT = 8 * 1024 * 1024;
-
-export const docCategories = ["产品文档", "技术文档", "设计资源", "财务报表", "其他"];
 
 interface DocUploadModalProps {
   open: boolean;

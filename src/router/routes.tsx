@@ -6,7 +6,9 @@ import {
   DeploymentUnitOutlined,
   FileTextOutlined,
   FolderOutlined,
+  NotificationOutlined,
   PartitionOutlined,
+  PictureOutlined,
   SettingOutlined,
   TeamOutlined,
   UserOutlined,
@@ -20,6 +22,8 @@ const DocManage = lazy(() => import("@/pages/docs"));
 const WorkflowDefine = lazy(() => import("@/pages/workflow/define"));
 const WorkflowTask = lazy(() => import("@/pages/workflow/task"));
 const PlatformConfig = lazy(() => import("@/pages/system/config"));
+const NoticeManage = lazy(() => import("@/pages/notices"));
+const SlideManage = lazy(() => import("@/pages/slides"));
 const UserManage = lazy(() => import("@/pages/system/user"));
 const RoleManage = lazy(() => import("@/pages/system/role"));
 const MenuManage = lazy(() => import("@/pages/system/menu"));
@@ -61,6 +65,24 @@ export const layoutRoutes: AppRouteObject[] = [
       </PermissionGuard>
     ),
     meta: { title: "文档管理", icon: <FolderOutlined />, perm: "docs:list" },
+  },
+  {
+    path: "notices",
+    element: (
+      <PermissionGuard perm="notice:list">
+        <NoticeManage />
+      </PermissionGuard>
+    ),
+    meta: { title: "公告管理", icon: <NotificationOutlined />, perm: "notice:list" },
+  },
+  {
+    path: "slides",
+    element: (
+      <PermissionGuard perm="slide:list">
+        <SlideManage />
+      </PermissionGuard>
+    ),
+    meta: { title: "首页幻灯片", icon: <PictureOutlined />, perm: "slide:list" },
   },
   {
     path: "workflow",

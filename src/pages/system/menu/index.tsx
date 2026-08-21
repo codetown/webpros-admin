@@ -8,7 +8,6 @@ import {
 import type { TableColumnsType } from "antd";
 import {
   App,
-  Badge,
   Button,
   Card,
   Form,
@@ -21,19 +20,15 @@ import {
   Tag,
   TreeSelect,
 } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createMenu, deleteMenu, getMenuList, type MenuFormValues, updateMenu } from "@/api/menu";
 import Authorized from "@/components/Authorized";
 import MenuIcon from "@/components/MenuIcon";
 import PageHeader from "@/components/PageHeader";
+import StatusBadge from "@/components/StatusBadge";
+import { menuTypeMeta, statusOptions } from "@/constants/meta";
 import type { MenuItem, MenuType, Status } from "@/types";
 import { listToTree, type TreeNode } from "@/utils/tree";
-
-const typeMeta: Record<MenuType, { label: string; color: string }> = {
-  catalog: { label: "目录", color: "blue" },
-  menu: { label: "菜单", color: "green" },
-  button: { label: "按钮", color: "orange" },
-};
 
 function sortBySort<T extends { sort: number; children: T[] }>(nodes: T[]): T[] {
   return [...nodes]
@@ -130,7 +125,9 @@ export default function MenuManagePage() {
       title: "类型",
       dataIndex: "type",
       width: 90,
-      render: (type: MenuType) => <Tag color={typeMeta[type].color}>{typeMeta[type].label}</Tag>,
+      render: (type: MenuType) => (
+        <Tag color={menuTypeMeta[type].color}>{menuTypeMeta[type].label}</Tag>
+      ),
     },
     {
       title: "权限标识",
@@ -144,9 +141,7 @@ export default function MenuManagePage() {
       title: "状态",
       dataIndex: "status",
       width: 90,
-      render: (status: Status) => (
-        <Badge status={status === 1 ? "success" : "error"} text={status === 1 ? "启用" : "停用"} />
-      ),
+      render: (status: Status) => <StatusBadge status={status} />,
     },
     {
       title: "操作",
@@ -193,15 +188,19 @@ export default function MenuManagePage() {
   ];
 
   type MenuOption = { title: string; value: number; children: MenuOption[] };
-  const parentTreeData: MenuOption[] = treeData
-    .filter((node) => node.type !== "button")
-    .map(function toOption(node: TreeNode<MenuItem>): MenuOption {
-      return {
-        title: node.name,
-        value: node.id,
-        children: node.children.filter((child) => child.type !== "button").map(toOption),
-      };
-    });
+  const parentTreeData: MenuOption[] = useMemo(
+    () =>
+      treeData
+        .filter((node) => node.type !== "button")
+        .map(function toOption(node: TreeNode<MenuItem>): MenuOption {
+          return {
+            title: node.name,
+            value: node.id,
+            children: node.children.filter((child) => child.type !== "button").map(toOption),
+          };
+        }),
+    [treeData],
+  );
 
   return (
     <div>
@@ -296,12 +295,7 @@ export default function MenuManagePage() {
                 <InputNumber min={1} max={999} />
               </Form.Item>
               <Form.Item name="status" label="状态" rules={[{ required: true }]}>
-                <Radio.Group
-                  options={[
-                    { label: "启用", value: 1 as Status },
-                    { label: "停用", value: 0 as Status },
-                  ]}
-                />
+                <Radio.Group options={statusOptions} />
               </Form.Item>
             </Space>
           </Form>

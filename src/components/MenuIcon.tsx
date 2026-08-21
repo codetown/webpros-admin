@@ -6,7 +6,9 @@ import {
   DeploymentUnitOutlined,
   FileTextOutlined,
   FolderOutlined,
+  NotificationOutlined,
   PartitionOutlined,
+  PictureOutlined,
   SettingOutlined,
   TeamOutlined,
   UserOutlined,
@@ -25,6 +27,8 @@ const iconMap: Record<string, ReactNode> = {
   DeploymentUnitOutlined: <DeploymentUnitOutlined />,
   AuditOutlined: <AuditOutlined />,
   ControlOutlined: <ControlOutlined />,
+  NotificationOutlined: <NotificationOutlined />,
+  PictureOutlined: <PictureOutlined />,
 };
 
 /** 根据图标名称渲染图标（菜单管理中的图标字段） */

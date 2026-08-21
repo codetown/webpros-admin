@@ -7,11 +7,14 @@ import {
   SettingOutlined,
 } from "@ant-design/icons";
 import type { TableColumnsType } from "antd";
-import { App, Badge, Button, Card, Form, Input, Modal, Radio, Space, Table, Tag } from "antd";
-import { useEffect, useState } from "react";
+import { App, Button, Card, Form, Input, Modal, Radio, Space, Table, Tag } from "antd";
+import { useState } from "react";
 import { createWorkflow, deleteWorkflow, getWorkflowList, updateWorkflow } from "@/api/workflow";
 import Authorized from "@/components/Authorized";
 import PageHeader from "@/components/PageHeader";
+import StatusBadge from "@/components/StatusBadge";
+import { statusOptions } from "@/constants/meta";
+import { useList } from "@/hooks/useList";
 import type { Status, Workflow } from "@/types";
 import { formatDateTime } from "@/utils/format";
 import StepConfigDrawer from "./StepConfigDrawer";
@@ -24,24 +27,17 @@ interface WorkflowFormValues {
 }
 
 export default function WorkflowDefinePage() {
-  const [workflows, setWorkflows] = useState<Workflow[]>([]);
-  const [loading, setLoading] = useState(false);
+  const {
+    loading,
+    dataSource: workflows,
+    refresh: fetchWorkflows,
+  } = useList<Workflow>(getWorkflowList);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Workflow | null>(null);
   const [saving, setSaving] = useState(false);
   const [configTarget, setConfigTarget] = useState<Workflow | null>(null);
   const [form] = Form.useForm<WorkflowFormValues>();
   const { modal } = App.useApp();
-
-  const fetchWorkflows = () => {
-    setLoading(true);
-    getWorkflowList()
-      .then(setWorkflows)
-      .catch(() => undefined)
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(fetchWorkflows, []);
 
   const openModal = (record: Workflow | null) => {
     setEditing(record);
@@ -112,9 +108,7 @@ export default function WorkflowDefinePage() {
       title: "状态",
       dataIndex: "status",
       width: 90,
-      render: (status: Status) => (
-        <Badge status={status === 1 ? "success" : "error"} text={status === 1 ? "启用" : "停用"} />
-      ),
+      render: (status: Status) => <StatusBadge status={status} />,
     },
     {
       title: "更新时间",
@@ -226,12 +220,7 @@ export default function WorkflowDefinePage() {
             <Input.TextArea rows={3} placeholder="流程用途描述" maxLength={100} showCount />
           </Form.Item>
           <Form.Item name="status" label="状态" rules={[{ required: true }]}>
-            <Radio.Group
-              options={[
-                { label: "启用", value: 1 as Status },
-                { label: "停用", value: 0 as Status },
-              ]}
-            />
+            <Radio.Group options={statusOptions} />
           </Form.Item>
         </Form>
       </Modal>

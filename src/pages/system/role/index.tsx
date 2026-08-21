@@ -7,34 +7,26 @@ import {
   TeamOutlined,
 } from "@ant-design/icons";
 import type { TableColumnsType } from "antd";
-import { App, Badge, Button, Card, Form, Input, Modal, Radio, Space, Table, Tag } from "antd";
-import { useEffect, useState } from "react";
+import { App, Button, Card, Form, Input, Modal, Radio, Space, Table, Tag } from "antd";
+import { useState } from "react";
 import { createRole, deleteRole, getRoleList, type RoleFormValues, updateRole } from "@/api/role";
 import Authorized from "@/components/Authorized";
 import PageHeader from "@/components/PageHeader";
+import StatusBadge from "@/components/StatusBadge";
+import { statusOptions } from "@/constants/meta";
+import { useList } from "@/hooks/useList";
 import type { RoleItem, Status } from "@/types";
 import { formatDateTime } from "@/utils/format";
 import PermDrawer from "./PermDrawer";
 
 export default function RoleManagePage() {
-  const [roles, setRoles] = useState<RoleItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { loading, dataSource: roles, refresh: fetchRoles } = useList<RoleItem>(getRoleList);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<RoleItem | null>(null);
   const [permRole, setPermRole] = useState<RoleItem | null>(null);
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm<RoleFormValues>();
   const { modal } = App.useApp();
-
-  const fetchRoles = () => {
-    setLoading(true);
-    getRoleList()
-      .then(setRoles)
-      .catch(() => undefined)
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(fetchRoles, []);
 
   const openModal = (record: RoleItem | null) => {
     setEditing(record);
@@ -99,9 +91,7 @@ export default function RoleManagePage() {
       title: "状态",
       dataIndex: "status",
       width: 90,
-      render: (status: Status) => (
-        <Badge status={status === 1 ? "success" : "error"} text={status === 1 ? "启用" : "停用"} />
-      ),
+      render: (status: Status) => <StatusBadge status={status} />,
     },
     {
       title: "创建时间",
@@ -209,12 +199,7 @@ export default function RoleManagePage() {
               <Input.TextArea rows={3} placeholder="角色职责描述" maxLength={100} showCount />
             </Form.Item>
             <Form.Item name="status" label="状态" rules={[{ required: true }]}>
-              <Radio.Group
-                options={[
-                  { label: "启用", value: 1 as Status },
-                  { label: "停用", value: 0 as Status },
-                ]}
-              />
+              <Radio.Group options={statusOptions} />
             </Form.Item>
           </Form>
         </Modal>

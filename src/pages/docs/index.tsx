@@ -13,11 +13,12 @@ import { type DocQuery, deleteDoc, getDocContent, getDocPage, renameDoc } from "
 import Authorized from "@/components/Authorized";
 import { getFileIcon } from "@/components/FileIcon";
 import PageHeader from "@/components/PageHeader";
+import { docCategories } from "@/constants/meta";
 import { useTable } from "@/hooks/useTable";
 import type { DocItem } from "@/types";
 import { downloadDataUrl } from "@/utils/file";
 import { formatDateTime, formatSize } from "@/utils/format";
-import DocUploadModal, { docCategories } from "./DocUploadModal";
+import DocUploadModal from "./DocUploadModal";
 
 export default function DocManagePage() {
   const { tableProps, onSearch, onReset, refresh } = useTable<DocItem, DocQuery>(getDocPage);

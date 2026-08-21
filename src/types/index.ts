@@ -236,6 +236,36 @@ export interface Workflow {
   updatedAt: string;
 }
 
+/** 公告类型 */
+export type NoticeType = "notice" | "announcement" | "update";
+/** 公告 */
+export interface NoticeItem {
+  id: number;
+  title: string;
+  content: string;
+  type: NoticeType;
+  pinned: boolean;
+  /** 1 已发布 / 0 草稿 */
+  status: Status;
+  publisher: string;
+  createdAt: string;
+}
+
+/** 首页幻灯片 */
+export interface SlideItem {
+  id: number;
+  title: string;
+  /** 图片（Mock 模式下为 dataURL） */
+  image: string;
+  /** 跳转链接 */
+  link?: string;
+  /** 副标题 */
+  description?: string;
+  sort: number;
+  status: Status;
+  createdAt: string;
+}
+
 /** 平台配置项类型 */
 export type ConfigValueType = "string" | "number" | "boolean" | "select";
 

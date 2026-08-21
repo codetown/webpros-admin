@@ -14,6 +14,7 @@ import {
 import { useState } from "react";
 import { changePasswordApi, updateProfileApi } from "@/api/auth";
 import PageHeader from "@/components/PageHeader";
+import { presetColors } from "@/constants/meta";
 import { useAppStore } from "@/store/useAppStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import type { Gender, UserInfo } from "@/types";
@@ -203,8 +204,6 @@ function SecurityTab() {
     </Form>
   );
 }
-
-const presetColors = ["#165dff", "#7c3aed", "#0ea5e9", "#10b981", "#f59e0b", "#ef4444"];
 
 function PreferenceTab() {
   const themeMode = useAppStore((state) => state.themeMode);

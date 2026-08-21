@@ -1,5 +1,7 @@
 import type { MenuFormValues } from "@/api/menu";
+import type { NoticeFormValues } from "@/api/notice";
 import type { RoleFormValues } from "@/api/role";
+import type { SlideFormValues } from "@/api/slide";
 import type { UserFormValues } from "@/api/user";
 import type { WorkflowFormValues } from "@/api/workflow";
 import type {
@@ -9,7 +11,9 @@ import type {
   Gender,
   LoginResult,
   MenuItem,
+  NoticeItem,
   RoleItem,
+  SlideItem,
   Status,
   TaskInstance,
   UserInfo,
@@ -625,6 +629,139 @@ export const handlers: MockRoute[] = [
       }
       saveDB(db);
       return ok(db.configs, "保存成功");
+    },
+  },
+
+  // ---------------- 公告管理 ----------------
+  {
+    method: "GET",
+    pattern: /^\/notice\/page$/,
+    handler: ({ query }) => {
+      const db = loadDB();
+      const page = numberQuery(query, "page", 1);
+      const pageSize = numberQuery(query, "pageSize", 10);
+      const title = query.get("title")?.trim();
+      const status = query.get("status");
+      let list = [...db.notices];
+      if (title) list = list.filter((notice) => notice.title.includes(title));
+      if (status !== null && status !== "") {
+        list = list.filter((notice) => notice.status === Number(status));
+      }
+      list = list.sort((a, b) => b.id - a.id);
+      return ok({ list: paginate(list, page, pageSize), total: list.length });
+    },
+  },
+  {
+    method: "GET",
+    pattern: /^\/notice\/published$/,
+    handler: () => {
+      const db = loadDB();
+      const list = db.notices
+        .filter((notice) => notice.status === 1)
+        .sort((a, b) => Number(b.pinned) - Number(a.pinned) || b.id - a.id);
+      return ok(list);
+    },
+  },
+  {
+    method: "POST",
+    pattern: /^\/notice$/,
+    handler: ({ body }) => {
+      const db = loadDB();
+      const values = body as unknown as NoticeFormValues;
+      const notice: NoticeItem = {
+        ...values,
+        id: Math.max(0, ...db.notices.map((item) => item.id)) + 1,
+        publisher: String(body.publisher ?? "-"),
+        createdAt: new Date().toISOString(),
+      };
+      db.notices.push(notice);
+      saveDB(db);
+      return ok(notice, "创建成功");
+    },
+  },
+  {
+    method: "PUT",
+    pattern: /^\/notice\/(?<id>\d+)$/,
+    handler: ({ params, body }) => {
+      const db = loadDB();
+      const notice = db.notices.find((item) => item.id === Number(params.id));
+      if (!notice) return fail("公告不存在");
+      const values = body as unknown as NoticeFormValues;
+      Object.assign(notice, values);
+      saveDB(db);
+      return ok(notice, "更新成功");
+    },
+  },
+  {
+    method: "DELETE",
+    pattern: /^\/notice\/(?<id>\d+)$/,
+    handler: ({ params }) => {
+      const db = loadDB();
+      db.notices = db.notices.filter((item) => item.id !== Number(params.id));
+      saveDB(db);
+      return ok(null, "删除成功");
+    },
+  },
+
+  // ---------------- 首页幻灯片 ----------------
+  {
+    method: "GET",
+    pattern: /^\/slide\/list$/,
+    handler: () => {
+      const db = loadDB();
+      const list = [...db.slides].sort((a, b) => a.sort - b.sort || b.id - a.id);
+      return ok(list);
+    },
+  },
+  {
+    method: "POST",
+    pattern: /^\/slide$/,
+    handler: ({ body }) => {
+      const db = loadDB();
+      const values = body as unknown as SlideFormValues;
+      const slide: SlideItem = {
+        ...values,
+        id: Math.max(0, ...db.slides.map((item) => item.id)) + 1,
+        createdAt: new Date().toISOString(),
+      };
+      db.slides.push(slide);
+      saveDB(db);
+      return ok(slide, "创建成功");
+    },
+  },
+  {
+    method: "PUT",
+    pattern: /^\/slide\/(?<id>\d+)$/,
+    handler: ({ params, body }) => {
+      const db = loadDB();
+      const slide = db.slides.find((item) => item.id === Number(params.id));
+      if (!slide) return fail("幻灯片不存在");
+      const values = body as unknown as SlideFormValues;
+      Object.assign(slide, values);
+      saveDB(db);
+      return ok(slide, "更新成功");
+    },
+  },
+  {
+    method: "PATCH",
+    pattern: /^\/slide\/(?<id>\d+)\/status$/,
+    handler: ({ params, body }) => {
+      const db = loadDB();
+      const slide = db.slides.find((item) => item.id === Number(params.id));
+      if (!slide) return fail("幻灯片不存在");
+      slide.status = Number(body.status) as Status;
+      saveDB(db);
+      return ok(null, slide.status === 1 ? "已启用" : "已停用");
+    },
+  },
+  {
+    method: "DELETE",
+    pattern: /^\/slide\/(?<id>\d+)$/,
+    handler: ({ params }) => {
+      const db = loadDB();
+      db.slides = db.slides.filter((item) => item.id !== Number(params.id));
+      saveDB(db);
+      return ok(null, "删除成功");
     },
   },
 

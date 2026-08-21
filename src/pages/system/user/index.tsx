@@ -33,6 +33,7 @@ import {
 } from "@/api/user";
 import Authorized from "@/components/Authorized";
 import PageHeader from "@/components/PageHeader";
+import { statusOptions } from "@/constants/meta";
 import { usePermission } from "@/hooks/usePermission";
 import { useTable } from "@/hooks/useTable";
 import type { Status, SystemUser } from "@/types";
@@ -246,15 +247,7 @@ export default function UserManagePage() {
             <Input placeholder="手机号" allowClear style={{ width: 180 }} />
           </Form.Item>
           <Form.Item name="status" label="状态">
-            <Select
-              placeholder="全部"
-              allowClear
-              style={{ width: 120 }}
-              options={[
-                { label: "启用", value: 1 },
-                { label: "停用", value: 0 },
-              ]}
-            />
+            <Select placeholder="全部" allowClear style={{ width: 120 }} options={statusOptions} />
           </Form.Item>
           <Form.Item>
             <Space>

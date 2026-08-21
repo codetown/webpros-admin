@@ -1,10 +1,13 @@
+import { deptOptions } from "@/constants/meta";
 import type {
   DocItem,
   Gender,
   LogItem,
   MenuItem,
+  NoticeItem,
   PlatformConfig,
   RoleItem,
+  SlideItem,
   Status,
   SystemUser,
   TaskInstance,
@@ -23,11 +26,12 @@ export interface MockDB {
   workflows: Workflow[];
   tasks: TaskInstance[];
   configs: PlatformConfig[];
+  notices: NoticeItem[];
+  slides: SlideItem[];
 }
 
-const DB_KEY = "webpros-admin-mock-db-v4";
+const DB_KEY = "webpros-admin-mock-db-v6";
 
-const depts = ["研发部", "市场部", "财务部", "人事部", "运营部"];
 const surnames = "赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张".split("");
 const givens = [
   "伟",
@@ -123,7 +127,7 @@ function seedUsers(): DbUser[] {
       email: `user${i}@webpros.dev`,
       phone: randomPhone(),
       gender,
-      dept: randomItem(depts),
+      dept: randomItem(deptOptions),
       roles: i % 4 === 0 ? ["operator"] : ["staff"],
       status: (i % 7 === 0 ? 0 : 1) as Status,
       createdAt: daysAgo(Math.floor(Math.random() * 180)),
@@ -162,6 +166,9 @@ function seedRoles(): RoleItem[] {
         "workflow:task:list",
         "workflow:task:create",
         "workflow:task:submit",
+        "notice:list",
+        "notice:update",
+        "slide:list",
       ],
       status: 1,
       createdAt: daysAgo(300),
@@ -495,6 +502,82 @@ function seedMenus(): MenuItem[] {
       type: "button",
       permission: "platform:config:update",
       sort: 1,
+      status: 1,
+    },
+    {
+      id: 10,
+      parentId: 0,
+      name: "公告管理",
+      type: "menu",
+      icon: "NotificationOutlined",
+      path: "/notices",
+      permission: "notice:list",
+      sort: 5,
+      status: 1,
+    },
+    {
+      id: 100,
+      parentId: 10,
+      name: "公告新增",
+      type: "button",
+      permission: "notice:add",
+      sort: 1,
+      status: 1,
+    },
+    {
+      id: 101,
+      parentId: 10,
+      name: "公告编辑",
+      type: "button",
+      permission: "notice:update",
+      sort: 2,
+      status: 1,
+    },
+    {
+      id: 102,
+      parentId: 10,
+      name: "公告删除",
+      type: "button",
+      permission: "notice:delete",
+      sort: 3,
+      status: 1,
+    },
+    {
+      id: 11,
+      parentId: 0,
+      name: "首页幻灯片",
+      type: "menu",
+      icon: "PictureOutlined",
+      path: "/slides",
+      permission: "slide:list",
+      sort: 6,
+      status: 1,
+    },
+    {
+      id: 110,
+      parentId: 11,
+      name: "幻灯片新增",
+      type: "button",
+      permission: "slide:add",
+      sort: 1,
+      status: 1,
+    },
+    {
+      id: 111,
+      parentId: 11,
+      name: "幻灯片编辑",
+      type: "button",
+      permission: "slide:update",
+      sort: 2,
+      status: 1,
+    },
+    {
+      id: 112,
+      parentId: 11,
+      name: "幻灯片删除",
+      type: "button",
+      permission: "slide:delete",
+      sort: 3,
       status: 1,
     },
   ];
@@ -1012,6 +1095,112 @@ function seedConfigs(): PlatformConfig[] {
   ];
 }
 
+function seedNotices(): NoticeItem[] {
+  return [
+    {
+      id: 1,
+      title: "系统升级维护通知",
+      content: "本周六 02:00-04:00 进行系统升级维护，期间服务将短暂不可用，请提前保存工作。",
+      type: "notice",
+      pinned: true,
+      status: 1,
+      publisher: "超级管理员",
+      createdAt: daysAgo(0),
+    },
+    {
+      id: 2,
+      title: "2026 年中秋节放假安排",
+      content: "根据国务院办公厅通知，中秋节放假调休安排已发布，请各部门提前做好工作交接。",
+      type: "announcement",
+      pinned: true,
+      status: 1,
+      publisher: "超级管理员",
+      createdAt: daysAgo(1),
+    },
+    {
+      id: 3,
+      title: "v1.2.0 版本更新说明",
+      content: "新增消息中心、主题色定制与菜单搜索（Ctrl+K），优化多标签页交互体验。",
+      type: "update",
+      pinned: false,
+      status: 1,
+      publisher: "超级管理员",
+      createdAt: daysAgo(3),
+    },
+    {
+      id: 4,
+      title: "办公区域消防演练通知",
+      content: "定于下周三下午进行消防应急疏散演练，请全体员工配合参与。",
+      type: "notice",
+      pinned: false,
+      status: 1,
+      publisher: "运营小王",
+      createdAt: daysAgo(5),
+    },
+    {
+      id: 5,
+      title: "新员工入职培训安排（草稿）",
+      content: "入职培训将于每周五上午举行，内容涵盖公司制度与常用工具使用。",
+      type: "announcement",
+      pinned: false,
+      status: 0,
+      publisher: "运营小王",
+      createdAt: daysAgo(6),
+    },
+  ];
+}
+
+/** 生成渐变占位图（SVG dataURL，无需真实图片文件） */
+function svgSlide(from: string, to: string, text: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="480"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${from}"/><stop offset="1" stop-color="${to}"/></linearGradient></defs><rect width="1200" height="480" fill="url(#g)"/><text x="600" y="260" font-size="64" fill="#ffffff" font-family="sans-serif" text-anchor="middle" font-weight="bold">${text}</text></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+function seedSlides(): SlideItem[] {
+  return [
+    {
+      id: 1,
+      title: "全新 WebPros Admin 上线",
+      description: "开箱即用的中后台前端解决方案",
+      image: svgSlide("#165dff", "#0ea5e9", "WebPros Admin"),
+      link: "/dashboard",
+      sort: 1,
+      status: 1,
+      createdAt: daysAgo(10),
+    },
+    {
+      id: 2,
+      title: "任务工作流全新升级",
+      description: "可视化编排流程步骤与动态表单",
+      image: svgSlide("#7c3aed", "#a855f7", "Workflow"),
+      link: "/workflow/define",
+      sort: 2,
+      status: 1,
+      createdAt: daysAgo(8),
+    },
+    {
+      id: 3,
+      title: "文档中心开放",
+      description: "团队文档统一归档、分享与下载",
+      image: svgSlide("#0ea5e9", "#10b981", "Docs"),
+      link: "/docs",
+      sort: 3,
+      status: 1,
+      createdAt: daysAgo(6),
+    },
+    {
+      id: 4,
+      title: "中秋活动预告（草稿）",
+      description: "敬请期待",
+      image: svgSlide("#f59e0b", "#ef4444", "Coming Soon"),
+      link: "/notices",
+      sort: 4,
+      status: 0,
+      createdAt: daysAgo(2),
+    },
+  ];
+}
+
 function seed(): MockDB {
   const workflows = seedWorkflows();
   return {
@@ -1023,6 +1212,8 @@ function seed(): MockDB {
     workflows,
     tasks: seedTasks(workflows),
     configs: seedConfigs(),
+    notices: seedNotices(),
+    slides: seedSlides(),
   };
 }
 

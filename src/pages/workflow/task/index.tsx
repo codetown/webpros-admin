@@ -5,18 +5,12 @@ import { useEffect, useState } from "react";
 import { createTask, getTaskPage, getWorkflowList, type TaskQuery } from "@/api/workflow";
 import Authorized from "@/components/Authorized";
 import PageHeader from "@/components/PageHeader";
+import { taskStatusMeta } from "@/constants/meta";
 import { useTable } from "@/hooks/useTable";
 import { useAuthStore } from "@/store/useAuthStore";
 import type { TaskInstance, TaskStatus, Workflow } from "@/types";
 import { formatDateTime } from "@/utils/format";
 import TaskDetailDrawer from "./TaskDetailDrawer";
-
-const statusMeta: Record<TaskStatus, { label: string; color: string }> = {
-  pending: { label: "待开始", color: "default" },
-  processing: { label: "进行中", color: "processing" },
-  completed: { label: "已完成", color: "success" },
-  cancelled: { label: "已取消", color: "error" },
-};
 
 interface TaskCreateValues {
   workflowId: number;
@@ -102,7 +96,7 @@ export default function WorkflowTaskPage() {
       dataIndex: "status",
       width: 90,
       render: (status: TaskStatus) => (
-        <Tag color={statusMeta[status].color}>{statusMeta[status].label}</Tag>
+        <Tag color={taskStatusMeta[status].color}>{taskStatusMeta[status].label}</Tag>
       ),
     },
     { title: "发起人", dataIndex: "creator", width: 110 },
@@ -153,7 +147,7 @@ export default function WorkflowTaskPage() {
               placeholder="全部"
               allowClear
               style={{ width: 130 }}
-              options={Object.entries(statusMeta).map(([value, meta]) => ({
+              options={Object.entries(taskStatusMeta).map(([value, meta]) => ({
                 label: meta.label,
                 value,
               }))}

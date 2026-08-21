@@ -3,16 +3,20 @@ import {
   CaretUpOutlined,
   DollarOutlined,
   EyeOutlined,
+  PushpinFilled,
   ShoppingCartOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
 import type { TableColumnsType } from "antd";
 import {
   version as antdVersion,
+  Button,
   Card,
   Col,
+  List,
   Progress,
   Row,
+  Space,
   Statistic,
   Table,
   Tag,
@@ -20,10 +24,13 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import { type ReactNode, version as reactVersion, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getDashboardSummary } from "@/api/dashboard";
+import { getPublishedNotices } from "@/api/notice";
+import { noticeTypeMeta } from "@/constants/meta";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useNotificationStore } from "@/store/useNotificationStore";
-import type { DashboardSummary, OrderItem, StatItem } from "@/types";
+import type { DashboardSummary, NoticeItem, OrderItem, StatItem } from "@/types";
 import { getGreeting } from "@/utils/format";
 import Sparkline from "./Sparkline";
 
@@ -76,6 +83,8 @@ export default function DashboardPage() {
   const unread = useNotificationStore((state) => state.items.filter((item) => !item.read).length);
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [notices, setNotices] = useState<NoticeItem[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
@@ -87,6 +96,11 @@ export default function DashboardPage() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+    getPublishedNotices()
+      .then((list) => {
+        if (!cancelled) setNotices(list.slice(0, 5));
+      })
+      .catch(() => undefined);
     return () => {
       cancelled = true;
     };
@@ -243,6 +257,43 @@ export default function DashboardPage() {
                 {import.meta.env.VITE_USE_MOCK === "true" ? "Mock 数据" : "真实接口"}
               </strong>
             </div>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        <Col xs={24}>
+          <Card
+            title="最新公告"
+            extra={
+              <Button type="link" size="small" onClick={() => navigate("/notices")}>
+                查看全部
+              </Button>
+            }
+          >
+            <List
+              dataSource={notices}
+              locale={{ emptyText: "暂无公告" }}
+              renderItem={(item) => (
+                <List.Item
+                  style={{ cursor: "pointer" }}
+                  onClick={() => navigate("/notices")}
+                  actions={[
+                    <span key="date" className="stat-desc">
+                      {dayjs(item.createdAt).format("MM-DD")}
+                    </span>,
+                  ]}
+                >
+                  <Space>
+                    {item.pinned ? <PushpinFilled style={{ color: "#f59e0b" }} /> : null}
+                    <Tag color={noticeTypeMeta[item.type].color}>
+                      {noticeTypeMeta[item.type].label}
+                    </Tag>
+                    <span>{item.title}</span>
+                  </Space>
+                </List.Item>
+              )}
+            />
           </Card>
         </Col>
       </Row>

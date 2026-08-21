@@ -2,9 +2,8 @@ import { Button, Drawer, Form, Input, Radio, Select, Space } from "antd";
 import { useEffect, useState } from "react";
 import { getRoleList } from "@/api/role";
 import { createUser, type UserFormValues, updateUser } from "@/api/user";
-import type { RoleItem, Status, SystemUser } from "@/types";
-
-const deptOptions = ["研发部", "市场部", "财务部", "人事部", "运营部"];
+import { deptOptions, statusOptions } from "@/constants/meta";
+import type { RoleItem, SystemUser } from "@/types";
 
 interface UserFormDrawerProps {
   open: boolean;
@@ -126,12 +125,7 @@ export default function UserFormDrawer({ open, value, onClose, onSuccess }: User
           />
         </Form.Item>
         <Form.Item name="status" label="状态" rules={[{ required: true }]}>
-          <Radio.Group
-            options={[
-              { label: "启用", value: 1 as Status },
-              { label: "停用", value: 0 as Status },
-            ]}
-          />
+          <Radio.Group options={statusOptions} />
         </Form.Item>
       </Form>
     </Drawer>
