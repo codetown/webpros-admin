@@ -23,7 +23,7 @@ import {
 import { useEffect, useState } from "react";
 import { updateWorkflow } from "@/api/workflow";
 import type { Status, Workflow, WorkflowField, WorkflowFieldType, WorkflowStep } from "@/types";
-import { fieldTypeLabels, genId } from "../components/fields";
+import { fieldTypeLabels, genId, optionFieldTypes } from "../components/fields";
 
 interface StepConfigDrawerProps {
   open: boolean;
@@ -45,6 +45,30 @@ interface FieldFormValues {
   placeholder?: string;
   tips?: string;
   options?: string[];
+  defaultValue?: string;
+}
+
+/** 默认值：编辑态（字符串）与保存态（按类型转换）互转 */
+function toDefaultInput(type: WorkflowFieldType, value?: unknown): string {
+  if (value === undefined || value === null) return "";
+  if (type === "checkbox") return Array.isArray(value) ? value.join("、") : String(value);
+  return String(value);
+}
+
+function fromDefaultInput(type: WorkflowFieldType, raw?: string): unknown {
+  const text = raw?.trim();
+  if (!text) return undefined;
+  if (type === "number") {
+    const num = Number(text);
+    return Number.isNaN(num) ? undefined : num;
+  }
+  if (type === "checkbox") {
+    return text
+      .split(/[,，、]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return type === "switch" ? undefined : text;
 }
 
 /** 步骤与表单项配置抽屉：这是工作流编排的核心 */
@@ -121,7 +145,10 @@ export default function StepConfigDrawer({
     setFieldEditing(field);
     fieldForm.resetFields();
     if (field) {
-      fieldForm.setFieldsValue(field);
+      fieldForm.setFieldsValue({
+        ...field,
+        defaultValue: toDefaultInput(field.type, field.defaultValue),
+      });
     } else {
       fieldForm.setFieldsValue({ type: "input", required: false });
     }
@@ -138,7 +165,8 @@ export default function StepConfigDrawer({
       required: values.required,
       placeholder: values.placeholder?.trim() || undefined,
       tips: values.tips?.trim() || undefined,
-      options: values.type === "select" || values.type === "radio" ? values.options : undefined,
+      options: optionFieldTypes.includes(values.type) ? values.options : undefined,
+      defaultValue: fromDefaultInput(values.type, values.defaultValue),
     };
     setSteps((prev) =>
       prev.map((step) => {
@@ -399,7 +427,28 @@ export default function StepConfigDrawer({
           <Form.Item noStyle shouldUpdate={(prev, next) => prev.type !== next.type}>
             {({ getFieldValue }) => {
               const type = getFieldValue("type") as WorkflowFieldType;
-              if (type !== "select" && type !== "radio") return null;
+              if (type === "switch") return null;
+              return (
+                <Form.Item
+                  name="defaultValue"
+                  label="默认值"
+                  tooltip="创建任务时自动预填，多选用顿号分隔"
+                >
+                  <Input
+                    placeholder={
+                      type === "checkbox"
+                        ? "多个默认值用顿号分隔，如：笔记本、显示器"
+                        : "默认值（可选）"
+                    }
+                  />
+                </Form.Item>
+              );
+            }}
+          </Form.Item>
+          <Form.Item noStyle shouldUpdate={(prev, next) => prev.type !== next.type}>
+            {({ getFieldValue }) => {
+              const type = getFieldValue("type") as WorkflowFieldType;
+              if (!optionFieldTypes.includes(type)) return null;
               return (
                 <Form.Item
                   name="options"

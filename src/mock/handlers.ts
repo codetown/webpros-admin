@@ -521,6 +521,35 @@ export const handlers: MockRoute[] = [
       return ok(null, "删除成功");
     },
   },
+  {
+    method: "POST",
+    pattern: /^\/workflow\/(?<id>\d+)\/duplicate$/,
+    handler: ({ params }) => {
+      const db = loadDB();
+      const source = db.workflows.find((item) => item.id === Number(params.id));
+      if (!source) return fail("流程不存在");
+      const now = new Date().toISOString();
+      let code = `${source.code}-copy`;
+      let suffix = 1;
+      while (db.workflows.some((item) => item.code === code)) {
+        code = `${source.code}-copy${suffix}`;
+        suffix += 1;
+      }
+      const copy: Workflow = {
+        ...(JSON.parse(JSON.stringify(source)) as Workflow),
+        id: Math.max(0, ...db.workflows.map((item) => item.id)) + 1,
+        name: `${source.name}（副本）`,
+        code,
+        // 副本默认停用，确认无误后再启用
+        status: 0 as Status,
+        createdAt: now,
+        updatedAt: now,
+      };
+      db.workflows.push(copy);
+      saveDB(db);
+      return ok(copy, "复制成功");
+    },
+  },
 
   // ---------------- 任务实例 ----------------
   {

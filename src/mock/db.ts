@@ -30,7 +30,7 @@ export interface MockDB {
   slides: SlideItem[];
 }
 
-const DB_KEY = "webpros-admin-mock-db-v6";
+const DB_KEY = "webpros-admin-mock-db-v7";
 
 const surnames = "赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张".split("");
 const givens = [
@@ -746,12 +746,20 @@ function seedWorkflows(): Workflow[] {
               id: "onb-s3-f2",
               name: "device",
               label: "办公设备",
-              type: "select",
+              type: "checkbox",
               required: false,
               options: ["笔记本", "显示器", "键鼠套装"],
+              defaultValue: ["笔记本"],
             },
             {
               id: "onb-s3-f3",
+              name: "arrivalTime",
+              label: "预计到岗时间",
+              type: "datetime",
+              required: false,
+            },
+            {
+              id: "onb-s3-f4",
               name: "accessCard",
               label: "发放门禁卡",
               type: "switch",
@@ -892,6 +900,7 @@ function seedWorkflows(): Workflow[] {
               type: "radio",
               required: true,
               options: ["高", "中", "低"],
+              defaultValue: "中",
             },
           ],
         },

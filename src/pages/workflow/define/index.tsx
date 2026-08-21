@@ -1,6 +1,8 @@
 import {
+  CopyOutlined,
   DeleteOutlined,
   EditOutlined,
+  EyeOutlined,
   PartitionOutlined,
   PlusOutlined,
   ReloadOutlined,
@@ -9,7 +11,13 @@ import {
 import type { TableColumnsType } from "antd";
 import { App, Button, Card, Form, Input, Modal, Radio, Space, Table, Tag } from "antd";
 import { useState } from "react";
-import { createWorkflow, deleteWorkflow, getWorkflowList, updateWorkflow } from "@/api/workflow";
+import {
+  createWorkflow,
+  deleteWorkflow,
+  duplicateWorkflow,
+  getWorkflowList,
+  updateWorkflow,
+} from "@/api/workflow";
 import Authorized from "@/components/Authorized";
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
@@ -17,6 +25,8 @@ import { statusOptions } from "@/constants/meta";
 import { useList } from "@/hooks/useList";
 import type { Status, Workflow } from "@/types";
 import { formatDateTime } from "@/utils/format";
+import { notify } from "@/utils/notify";
+import PreviewDrawer from "./PreviewDrawer";
 import StepConfigDrawer from "./StepConfigDrawer";
 
 interface WorkflowFormValues {
@@ -36,8 +46,19 @@ export default function WorkflowDefinePage() {
   const [editing, setEditing] = useState<Workflow | null>(null);
   const [saving, setSaving] = useState(false);
   const [configTarget, setConfigTarget] = useState<Workflow | null>(null);
+  const [previewTarget, setPreviewTarget] = useState<Workflow | null>(null);
   const [form] = Form.useForm<WorkflowFormValues>();
   const { modal } = App.useApp();
+
+  const handleDuplicate = async (record: Workflow) => {
+    try {
+      await duplicateWorkflow(record.id);
+      fetchWorkflows();
+      notify.success("复制成功，副本默认为停用状态");
+    } catch {
+      // 错误提示已由请求层处理
+    }
+  };
 
   const openModal = (record: Workflow | null) => {
     setEditing(record);
@@ -120,9 +141,17 @@ export default function WorkflowDefinePage() {
       title: "操作",
       key: "actionCol",
       fixed: "right",
-      width: 230,
+      width: 310,
       render: (_: unknown, record) => (
         <Space size={0}>
+          <Button
+            type="link"
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => setPreviewTarget(record)}
+          >
+            预览
+          </Button>
           <Authorized perm="workflow:update">
             <Button
               type="link"
@@ -131,6 +160,16 @@ export default function WorkflowDefinePage() {
               onClick={() => setConfigTarget(record)}
             >
               配置步骤
+            </Button>
+          </Authorized>
+          <Authorized perm="workflow:update">
+            <Button
+              type="link"
+              size="small"
+              icon={<CopyOutlined />}
+              onClick={() => handleDuplicate(record)}
+            >
+              复制
             </Button>
           </Authorized>
           <Authorized perm="workflow:update">
@@ -231,6 +270,8 @@ export default function WorkflowDefinePage() {
         onClose={() => setConfigTarget(null)}
         onSuccess={fetchWorkflows}
       />
+
+      <PreviewDrawer workflow={previewTarget} onClose={() => setPreviewTarget(null)} />
     </div>
   );
 }

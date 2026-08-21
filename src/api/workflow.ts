@@ -35,6 +35,9 @@ export const updateWorkflow = (id: number, data: WorkflowFormValues) =>
 export const deleteWorkflow = (id: number) =>
   request<null>({ url: `/workflow/${id}`, method: "DELETE" });
 
+export const duplicateWorkflow = (id: number) =>
+  request<Workflow>({ url: `/workflow/${id}/duplicate`, method: "POST" });
+
 export const getTaskPage = (params: TaskQuery & PageParams) =>
   request<PageResult<TaskInstance>>({ url: "/task/page", params });
 

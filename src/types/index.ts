@@ -199,7 +199,9 @@ export type WorkflowFieldType =
   | "select"
   | "radio"
   | "date"
-  | "switch";
+  | "datetime"
+  | "switch"
+  | "checkbox";
 
 /** 工作流表单项定义 */
 export interface WorkflowField {
@@ -212,8 +214,10 @@ export interface WorkflowField {
   required: boolean;
   placeholder?: string;
   tips?: string;
-  /** select / radio 的选项 */
+  /** select / radio / checkbox 的选项 */
   options?: string[];
+  /** 默认值（创建任务时预填，checkbox 为字符串数组） */
+  defaultValue?: unknown;
 }
 
 /** 工作流步骤 */

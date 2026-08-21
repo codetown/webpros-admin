@@ -1,12 +1,16 @@
 import { Alert, Button, Card, Descriptions, Drawer, Form, Space, Steps, Tag } from "antd";
-import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { cancelTask, submitTaskStep } from "@/api/workflow";
 import Authorized from "@/components/Authorized";
 import { taskStatusMeta } from "@/constants/meta";
 import type { TaskInstance } from "@/types";
 import { notify } from "@/utils/notify";
-import { formatFieldValue, renderFieldItems } from "../components/fields";
+import {
+  buildStepInitialValues,
+  formatFieldValue,
+  normalizeFieldValue,
+  renderFieldItems,
+} from "../components/fields";
 
 interface TaskDetailDrawerProps {
   task: TaskInstance | null;
@@ -41,9 +45,7 @@ export default function TaskDetailDrawer({ task, onClose, onSuccess }: TaskDetai
     const values = await form.validateFields();
     const data: Record<string, unknown> = {};
     for (const field of currentStep.fields) {
-      const value = values[field.name];
-      data[field.name] =
-        field.type === "date" && value ? dayjs(value as Date).format("YYYY-MM-DD") : value;
+      data[field.name] = normalizeFieldValue(field, values[field.name]);
     }
     setSubmitting(true);
     try {
@@ -152,7 +154,12 @@ export default function TaskDetailDrawer({ task, onClose, onSuccess }: TaskDetai
                   {currentStep.description}
                 </div>
               ) : null}
-              <Form form={form} layout="vertical" key={`${current.id}-${current.currentStep}`}>
+              <Form
+                form={form}
+                layout="vertical"
+                key={`${current.id}-${current.currentStep}`}
+                initialValues={buildStepInitialValues(currentStep)}
+              >
                 {renderFieldItems(currentStep.fields)}
                 <Authorized perm="workflow:task:submit">
                   <Button type="primary" loading={submitting} onClick={handleSubmit}>
