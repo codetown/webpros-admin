@@ -349,6 +349,22 @@ body {
 
 /* ---------- 控制台 ---------- */
 
+/* 等高卡片：配合 antd Row 的 flex stretch，让同一行的卡片底部对齐 */
+.match-height-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.match-height-card .ant-card-body {
+  flex: 1;
+  overflow: auto;
+}
+
+.match-height-fill {
+  height: 100%;
+}
+
 .welcome-banner {
   position: relative;
   display: flex;
@@ -490,17 +506,54 @@ body {
   width: 340px;
 }
 
-.notification-panel .ant-list {
+.notification-list {
   max-height: 340px;
   overflow: auto;
 }
 
-.notification-panel .ant-list-item {
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   padding: 10px 14px;
 }
 
-.notification-panel .ant-list-item.read {
+.notification-item.read {
   opacity: 0.55;
+}
+
+.notification-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-title {
+  font-weight: 600;
+}
+
+/* ---------- 控制台最新公告 ---------- */
+
+.notice-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 4px;
+  border: none;
+  border-bottom: 1px dashed rgba(128, 128, 128, 0.2);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.notice-row:last-child {
+  border-bottom: none;
+}
+
+.notice-row:hover {
+  color: var(--app-primary);
 }
 
 .notify-icon {

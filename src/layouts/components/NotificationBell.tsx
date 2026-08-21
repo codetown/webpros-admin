@@ -5,7 +5,7 @@ import {
   InfoCircleOutlined,
   WarningOutlined,
 } from "@ant-design/icons";
-import { Badge, Button, Empty, List, Popover, Tooltip } from "antd";
+import { Badge, Button, Empty, Popover, Tooltip } from "antd";
 import dayjs from "dayjs";
 import { type ReactNode, useMemo, useState } from "react";
 import { useNotificationStore } from "@/store/useNotificationStore";
@@ -29,39 +29,27 @@ export default function NotificationBell() {
 
   const content = (
     <div className="notification-panel">
-      <List
-        dataSource={items}
-        locale={{
-          emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无通知" />,
-        }}
-        renderItem={(item) => (
-          <List.Item
-            className={item.read ? "read" : ""}
-            actions={
-              item.read
-                ? undefined
-                : [
-                    <Button key="read" type="link" size="small" onClick={() => markRead(item.id)}>
-                      已读
-                    </Button>,
-                  ]
-            }
-          >
-            <List.Item.Meta
-              avatar={
-                <span className={`notify-icon notify-${item.type}`}>{typeIcon[item.type]}</span>
-              }
-              title={item.title}
-              description={
-                <div>
-                  <div>{item.content}</div>
-                  <div className="notify-time">{dayjs(item.createdAt).fromNow()}</div>
-                </div>
-              }
-            />
-          </List.Item>
+      <div className="notification-list">
+        {items.length === 0 ? (
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无通知" />
+        ) : (
+          items.map((item) => (
+            <div key={item.id} className={`notification-item${item.read ? " read" : ""}`}>
+              <span className={`notify-icon notify-${item.type}`}>{typeIcon[item.type]}</span>
+              <div className="notification-body">
+                <div className="notification-title">{item.title}</div>
+                <div>{item.content}</div>
+                <div className="notify-time">{dayjs(item.createdAt).fromNow()}</div>
+              </div>
+              {item.read ? null : (
+                <Button type="link" size="small" onClick={() => markRead(item.id)}>
+                  已读
+                </Button>
+              )}
+            </div>
+          ))
         )}
-      />
+      </div>
       <div className="notification-actions">
         <Button type="text" size="small" disabled={unread === 0} onClick={markAllRead}>
           全部已读

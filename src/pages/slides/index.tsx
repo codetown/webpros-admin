@@ -41,6 +41,41 @@ import { readAsDataUrl } from "@/utils/file";
 import { formatDateTime } from "@/utils/format";
 import { notify } from "@/utils/notify";
 
+/** 受控图片上传：接收 value/onChange，配合 Form.Item 使用 */
+function ImageUpload({ value, onChange }: { value?: string; onChange?: (value: string) => void }) {
+  const beforeUpload: UploadProps["beforeUpload"] = async (file) => {
+    if (!file.type.startsWith("image/")) {
+      notify.error("仅支持上传图片文件");
+      return Upload.LIST_IGNORE;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      notify.error("图片大小不能超过 2MB");
+      return Upload.LIST_IGNORE;
+    }
+    const dataUrl = await readAsDataUrl(file);
+    onChange?.(dataUrl);
+    return false;
+  };
+
+  return (
+    <Upload
+      accept="image/*"
+      listType="picture-card"
+      showUploadList={false}
+      beforeUpload={beforeUpload}
+    >
+      {value ? (
+        <img src={value} alt="预览" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : (
+        <div>
+          <PlusOutlined />
+          <div style={{ marginTop: 8 }}>上传</div>
+        </div>
+      )}
+    </Upload>
+  );
+}
+
 export default function SlideManagePage() {
   const { loading, dataSource: slides, refresh } = useList<SlideItem>(getSlideList);
   const hasPerm = usePermission();
@@ -101,22 +136,6 @@ export default function SlideManagePage() {
       },
     });
   };
-
-  const beforeUpload: UploadProps["beforeUpload"] = async (file) => {
-    if (!file.type.startsWith("image/")) {
-      notify.error("仅支持上传图片文件");
-      return Upload.LIST_IGNORE;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      notify.error("图片大小不能超过 2MB");
-      return Upload.LIST_IGNORE;
-    }
-    const dataUrl = await readAsDataUrl(file);
-    form.setFieldsValue({ image: dataUrl });
-    return false;
-  };
-
-  const imageValue = Form.useWatch("image", form);
 
   const columns: TableColumnsType<SlideItem> = [
     {
@@ -234,31 +253,8 @@ export default function SlideManagePage() {
         width={560}
       >
         <Form form={form} layout="vertical" autoComplete="off" style={{ marginTop: 16 }}>
-          <Form.Item
-            name="image"
-            label="图片"
-            rules={[{ required: true, message: "请上传图片" }]}
-            valuePropName="value"
-          >
-            <Upload
-              accept="image/*"
-              listType="picture-card"
-              showUploadList={false}
-              beforeUpload={beforeUpload}
-            >
-              {imageValue ? (
-                <img
-                  src={imageValue}
-                  alt="预览"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              ) : (
-                <div>
-                  <PlusOutlined />
-                  <div style={{ marginTop: 8 }}>上传</div>
-                </div>
-              )}
-            </Upload>
+          <Form.Item name="image" label="图片" rules={[{ required: true, message: "请上传图片" }]}>
+            <ImageUpload />
           </Form.Item>
           <Form.Item name="title" label="标题" rules={[{ required: true, message: "请输入标题" }]}>
             <Input placeholder="幻灯片主标题" maxLength={40} />

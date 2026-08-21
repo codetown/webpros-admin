@@ -13,7 +13,6 @@ import {
   Button,
   Card,
   Col,
-  List,
   Progress,
   Row,
   Space,
@@ -148,7 +147,7 @@ export default function DashboardPage() {
                     <Statistic
                       value={item.value}
                       prefix={item.prefix}
-                      valueStyle={{ fontSize: 26, fontWeight: 600 }}
+                      styles={{ content: { fontSize: 26, fontWeight: 600 } }}
                     />
                   </div>
                   <div
@@ -185,7 +184,7 @@ export default function DashboardPage() {
 
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24} xl={16}>
-          <Card title="最近订单" loading={loading}>
+          <Card className="match-height-card" title="最近订单" loading={loading}>
             <Table
               size="small"
               rowKey="id"
@@ -196,11 +195,12 @@ export default function DashboardPage() {
           </Card>
         </Col>
         <Col xs={24} xl={8}>
-          <Card title="最新动态" loading={loading}>
+          <Card className="match-height-card" title="最新动态" loading={loading}>
             <Timeline
+              className="match-height-fill"
               items={(summary?.activities ?? []).map((item) => ({
                 color: item.color,
-                children: (
+                content: (
                   <div>
                     <div>{item.text}</div>
                     <div className="stat-desc" style={{ fontSize: 12 }}>
@@ -216,7 +216,7 @@ export default function DashboardPage() {
 
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24} xl={16}>
-          <Card title="部门人数分布" loading={loading}>
+          <Card className="match-height-card" title="部门人数分布" loading={loading}>
             {(summary?.deptStats ?? []).map((dept) => (
               <div key={dept.dept} className="dept-row">
                 <span className="dept-name">{dept.dept}</span>
@@ -232,7 +232,7 @@ export default function DashboardPage() {
           </Card>
         </Col>
         <Col xs={24} xl={8}>
-          <Card title="系统信息">
+          <Card className="match-height-card" title="系统信息">
             <div className="sysinfo-row">
               <span>系统版本</span>
               <strong className="sysinfo-value">v1.1.0</strong>
@@ -271,18 +271,15 @@ export default function DashboardPage() {
               </Button>
             }
           >
-            <List
-              dataSource={notices}
-              locale={{ emptyText: "暂无公告" }}
-              renderItem={(item) => (
-                <List.Item
-                  style={{ cursor: "pointer" }}
+            {notices.length === 0 ? (
+              <div className="stat-desc">暂无公告</div>
+            ) : (
+              notices.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="notice-row"
                   onClick={() => navigate("/notices")}
-                  actions={[
-                    <span key="date" className="stat-desc">
-                      {dayjs(item.createdAt).format("MM-DD")}
-                    </span>,
-                  ]}
                 >
                   <Space>
                     {item.pinned ? <PushpinFilled style={{ color: "#f59e0b" }} /> : null}
@@ -291,9 +288,10 @@ export default function DashboardPage() {
                     </Tag>
                     <span>{item.title}</span>
                   </Space>
-                </List.Item>
-              )}
-            />
+                  <span className="stat-desc">{dayjs(item.createdAt).format("MM-DD")}</span>
+                </button>
+              ))
+            )}
           </Card>
         </Col>
       </Row>
