@@ -16,11 +16,13 @@ export default function TabsNav() {
   const removeAllTabs = useTabsStore((state) => state.removeAllTabs);
 
   useEffect(() => {
+    if (pathname === "/" || pathname === "") return;
     const meta = routeMetaMap.get(pathname);
+    if (!meta) return;
     addTab({
       key: pathname,
-      label: meta?.title ?? "未命名页面",
-      closable: meta?.affix !== true,
+      label: meta.title,
+      closable: meta.affix !== true,
     });
   }, [pathname, addTab]);
 

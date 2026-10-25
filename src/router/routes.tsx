@@ -54,7 +54,11 @@ export interface AppRouteObject {
 export const layoutRoutes: AppRouteObject[] = [
   {
     path: "dashboard",
-    element: <Dashboard />,
+    element: (
+      <PermissionGuard perm="dashboard">
+        <Dashboard />
+      </PermissionGuard>
+    ),
     meta: { title: "控制台", icon: <DashboardOutlined />, perm: "dashboard", affix: true },
   },
   {

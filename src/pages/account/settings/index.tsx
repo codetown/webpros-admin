@@ -79,7 +79,7 @@ function ProfileTab() {
         layout="vertical"
         autoComplete="off"
         onFinish={onFinish}
-        initialValues={user}
+        initialValues={user || undefined}
       >
         <Form.Item label="用户名">
           <Input value={user.username} disabled />

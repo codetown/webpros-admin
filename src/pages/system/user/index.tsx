@@ -97,7 +97,7 @@ export default function UserManagePage() {
             item.username,
             item.nickname,
             item.dept,
-            item.roles.join("/"),
+            (item.roles || []).join("/"),
             item.email,
             item.phone,
             genderLabels[item.gender],

@@ -188,6 +188,11 @@ export const handlers: MockRoute[] = [
       const user = db.users.find((item) => item.id === Number(params.id));
       if (!user) return fail("用户不存在");
       const values = body as unknown as UserFormValues;
+      if (values.username && values.username !== user.username) {
+        if (db.users.some((item) => item.username === values.username)) {
+          return fail("用户名已存在");
+        }
+      }
       Object.assign(user, values);
       saveDB(db);
       return ok(toPublicUser(user), "更新成功");

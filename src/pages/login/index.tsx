@@ -46,7 +46,7 @@ export default function LoginPage() {
           </div>
           <h1>开箱即用的中后台前端解决方案</h1>
           <p>
-            基于 React 18、Vite、Ant Design 5 与 Zustand
+            基于 React 19、Vite 8、Ant Design 6 与 Zustand
             构建，提供完整的权限模型、多标签页与暗黑主题，助力团队快速交付企业级后台产品。
           </p>
           <ul className="banner-features">

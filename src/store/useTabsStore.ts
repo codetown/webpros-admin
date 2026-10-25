@@ -27,9 +27,15 @@ export const useTabsStore = create<TabsState>()(
       activeKey: HOME_TAB.key,
       addTab: (tab) => {
         const { tabs } = get();
-        const exists = tabs.some((item) => item.key === tab.key);
+        const existing = tabs.find((item) => item.key === tab.key);
+        if (existing && existing.label === tab.label && existing.closable === tab.closable) {
+          if (get().activeKey !== tab.key) {
+            set({ activeKey: tab.key });
+          }
+          return;
+        }
         set({
-          tabs: exists ? tabs.map((item) => (item.key === tab.key ? tab : item)) : [...tabs, tab],
+          tabs: existing ? tabs.map((item) => (item.key === tab.key ? tab : item)) : [...tabs, tab],
           activeKey: tab.key,
         });
       },

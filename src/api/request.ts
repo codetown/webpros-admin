@@ -34,7 +34,9 @@ async function httpFetch<T>(options: RequestOptions): Promise<ApiResult<T>> {
 
   if (response.status === 401) {
     useAuthStore.getState().logout();
-    window.location.href = "/login";
+    if (window.location.pathname !== "/login") {
+      window.location.href = "/login";
+    }
     return { code: 401, message: "登录状态已过期，请重新登录", data: null as T };
   }
   if (!response.ok) {
